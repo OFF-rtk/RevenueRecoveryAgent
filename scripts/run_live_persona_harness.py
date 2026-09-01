@@ -180,6 +180,8 @@ async def run_harness(count: int):
             ["ignores_completely"] * 4 +
             ["forgetful_promises_then_pays"] * 5
         )
+    elif count == 1:
+        personas_to_assign = ["suspicious_payer"]
     elif count == 6:
         personas_to_assign = [
             "accidental_failure",
