@@ -49,20 +49,20 @@ async def draft_and_send_followup(
         "payment_link": f"https://rzp.io/i/{case.id.hex[:8]}"
     }, indent=2)
     
-    llm_result = await call_llm(
-        prompt_version=prompt_version,
-        model=settings.groq_tier1_model,
-        user_messages=[{"role": "user", "content": context}],
-        response_format={"type": "json_object"},
-    )
-    
     try:
+        llm_result = await call_llm(
+            prompt_version=prompt_version,
+            model=settings.groq_tier1_model,
+            user_messages=[{"role": "user", "content": context}],
+            response_format={"type": "json_object"},
+        )
         parsed = json.loads(llm_result.content)
         message_to_send = parsed["message"]
-    except (json.JSONDecodeError, KeyError) as exc:
+    except (json.JSONDecodeError, KeyError, ValueError) as exc:
         log.error("followup_draft_error", error=str(exc))
         # Fallback message
         message_to_send = "Thank you for your response. We will update your case."
+
         
     channel_response = await channel.send(
         to=case.customer_ref,
