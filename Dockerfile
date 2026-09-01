@@ -25,4 +25,4 @@ RUN pip install --no-cache-dir .
 
 # Start the application using uvicorn
 # Render injects the PORT environment variable. We default to 8000 if it's not set.
-CMD ["sh", "-c", "uvicorn core.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn core.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
