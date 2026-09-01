@@ -17,6 +17,7 @@ class WhatsAppChannel(BaseChannel):
     def __init__(self, api_token: str, phone_number_id: str):
         self.api_token = api_token
         self.phone_number_id = phone_number_id
+        self.name = "whatsapp"
         # Hardcoding API version v20.0 for stability
         self.base_url = f"https://graph.facebook.com/v20.0/{self.phone_number_id}/messages"
 

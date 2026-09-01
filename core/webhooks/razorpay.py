@@ -137,11 +137,17 @@ def _extract_failure_reason(event_type: str, payload: dict[str, Any]) -> str | N
     """Extract the raw failure reason code from the payload, if present."""
     entity_name = event_type.split(".")[0]
     entity = payload.get("payload", {}).get(entity_name, {}).get("entity", {})
-    return (
-        entity.get("error_code")
-        or entity.get("error_description")
-        or entity.get("status")
-    )
+    parts = []
+    if entity.get("error_code"):
+        parts.append(entity["error_code"])
+    if entity.get("error_reason"):
+        parts.append(entity["error_reason"])
+    if entity.get("error_description"):
+        parts.append(entity["error_description"])
+    
+    if parts:
+        return " | ".join(parts)
+    return entity.get("status")
 
 
 # ── Main processor ────────────────────────────────────────────────────────────
