@@ -36,11 +36,12 @@ RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "test_webhook_sec
 WHATSAPP_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "test_whatsapp_secret")
 
 PERSONAS = {
-    "cooperative": "You are an organized and polite person. You generally trust the services you use. When contacted about an issue, you prefer to resolve it quickly and amicably. You appreciate clear communication and links to resolve problems. You do not argue unnecessarily.",
-    "busy_needs_reminders": "You are extremely busy and often overwhelmed with work. You read messages quickly and often forget to reply unless prompted again. You are not malicious, just distracted. You appreciate brief, direct communication. You might promise to do something later but forget.",
-    "disputes_easily": "You are blunt and highly protective of your finances. You hate wasting time and are easily annoyed by vague corporate speak. You are quick to dispute unfamiliar charges, demanding exact details of what you are paying for. However, once you understand the charge, you are decisive and don't mince words—you will bluntly state whether you intend to pay or want to cancel.",
-    "forgetful_eventually_pays": "You are well-meaning but highly disorganized. You often miss deadlines and notifications. When reminded, you are apologetic and intend to fix it, but you might need a couple of nudges to actually complete a task. You are friendly in your responses.",
-    "never_responds": "You never respond to text messages from businesses. You ignore all notifications."
+    "accidental_failure": "PERSONA: You're a genuinely happy customer of this service. Your payment failure was just an accident -- maybe your card details changed, maybe you weren't paying attention. You have no complaints about the product and no reason to be difficult.\n\nTENDENCY: You generally lean toward paying quickly once you understand what happened and see a clear way to fix it. But you're a real person -- if the message is confusing, you might ask a clarifying question first. If it's clear and easy, you'll likely just pay.",
+    "suspicious_payer": "PERSONA: You don't immediately recognize the charge or the product name. You're not hostile, just cautious -- you want to understand what you're being asked to pay for before doing anything.\n\nTENDENCY: You will ask at least one clarifying question first (e.g. \"what product is this for?\", \"when did I sign up for this?\"). If the response you get is clear, specific, and matches something you can plausibly recall signing up for, you lean toward paying. If the response is vague, generic, or doesn't actually answer your question, you become more suspicious and are less likely to pay in this exchange.",
+    "needs_payment_help": "PERSONA: Your payment failed because something is wrong with your card on file (expired, wrong details, or similar) -- not because you don't want to pay. You're willing, but you need to actually change your payment method, and you'd prefer an easier option like UPI over re-entering card details.\n\nTENDENCY: You want to pay, but you need the message to actually give you a way to update your details, not just repeat \"please pay\" without addressing the real problem. If offered a clear path to update payment info or use UPI, you're likely to follow through. If the message just blindly asks you to retry the same failed method, you'll push back and ask for an alternative.",
+    "considering_cancellation": "PERSONA: You've been thinking about whether you still want this subscription/service at all. The payment failure is a natural moment to reconsider rather than an accident you want fixed immediately.\n\nTENDENCY: You are genuinely on the fence. You might ask what you'd lose by cancelling, express mild hesitation, or ask for more time to decide. A message that clearly communicates value or offers reasonable flexibility might tip you toward paying. A pushy or generic message might tip you toward disengaging. Don't decide in advance which way you'll go -- let the actual conversation determine it.",
+    "ignores_completely": "PERSONA: You do not respond to this message at all, under any circumstances, regardless of what it says.\n\nTENDENCY: Always return reply_text as an empty string \"\" and will_pay_now as null. Do not generate any conversational response. This persona exists purely to test the system's behavior when a customer never engages.",
+    "forgetful_promises_then_pays": "PERSONA: You're generally willing to pay and not upset about the situation, but you're busy and forgetful. Your natural response to a payment reminder is to say you'll take care of it soon, genuinely intending to -- and then not actually do it right away.\n\nTENDENCY: On first contact, you will make a plausible-sounding promise to pay soon (\"will do it tonight\", \"let me handle this tomorrow\") rather than paying immediately -- always return will_pay_now: null on this first exchange. If and when you receive a FOLLOW-UP message (you'll be told this is a follow-up, not a first message), you lean toward actually paying this time, since a reminder is exactly what you needed -- but you might need the nudge to feel appropriately worded rather than annoying for you to follow through."
 }
 
 def generate_razorpay_signature(payload_bytes: bytes, secret: str) -> str:
@@ -136,8 +137,8 @@ async def send_whatsapp_webhook(phone: str, message: str, client: httpx.AsyncCli
     return resp
 
 async def get_persona_reply(persona_type: str, conversation_history: list[dict]) -> dict:
-    if persona_type == "never_responds":
-        return {"reply_text": "", "will_pay": False}
+    if persona_type == "ignores_completely":
+        return {"reply_text": "", "will_pay_now": None}
         
     messages = [
         {"role": "user", "content": f"Your assigned persona is:\n{PERSONAS[persona_type]}"}
@@ -155,7 +156,7 @@ async def get_persona_reply(persona_type: str, conversation_history: list[dict])
         return json.loads(res.content)
     except Exception as e:
         print(f"Error parsing LLM response: {e}")
-        return {"reply_text": "", "will_pay": False}
+        return {"reply_text": "", "will_pay_now": None}
 
 async def run_harness(count: int):
     print(f"🚀 Starting Live Persona Harness with {count} cases...")
@@ -168,9 +169,34 @@ async def run_harness(count: int):
     base_phone = 919000000000
     persona_keys = list(PERSONAS.keys())
     
+    # Custom distribution logic
+    personas_to_assign = []
+    if count == 28:
+        personas_to_assign = (
+            ["accidental_failure"] * 5 +
+            ["suspicious_payer"] * 5 +
+            ["needs_payment_help"] * 5 +
+            ["considering_cancellation"] * 4 +
+            ["ignores_completely"] * 4 +
+            ["forgetful_promises_then_pays"] * 5
+        )
+    elif count == 6:
+        personas_to_assign = [
+            "accidental_failure",
+            "suspicious_payer",
+            "needs_payment_help",
+            "considering_cancellation",
+            "ignores_completely",
+            "forgetful_promises_then_pays"
+        ]
+    else:
+        personas_to_assign = [persona_keys[i % len(persona_keys)] for i in range(count)]
+        
+    random.shuffle(personas_to_assign)
+    
     for i in range(count):
         phone = str(base_phone + int(time.time()) % 10000 + i)
-        persona = persona_keys[i % len(persona_keys)]
+        persona = personas_to_assign[i]
         cases.append({
             "phone": phone,
             "persona": persona,
@@ -195,7 +221,7 @@ async def run_harness(count: int):
     engine = create_async_engine(db_url)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     
-    MAX_ROUNDS = 5
+    MAX_ROUNDS = 10
     
     for round_idx in range(MAX_ROUNDS):
         print(f"\n--- Round {round_idx + 1}/{MAX_ROUNDS} ---")
@@ -237,10 +263,10 @@ async def run_harness(count: int):
                     llm_resp = await get_persona_reply(c["persona"], c["conversation"])
                     latency = time.time() - start_time
                     
-                    print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('reasoning')} ({latency:.2f}s)")
+                    print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('internal_reasoning')} ({latency:.2f}s)")
                     reply_text = llm_resp.get("reply_text", "").strip()
                     
-                    if llm_resp.get("will_pay"):
+                    if llm_resp.get("will_pay_now") is True:
                         print(f"💰 Persona {c['phone']} decided to PAY!")
                         c["will_pay"] = True
                         c["status"] = "resolved"
@@ -262,7 +288,7 @@ async def run_harness(count: int):
                     # No new intervention. The app is waiting. We should trigger a follow up!
                     needs_followup_push = True
                     
-                if needs_followup_push and c["persona"] != "never_responds":
+                if needs_followup_push and c["persona"] != "ignores_completely":
                     # Randomly decide to force a follow-up to advance the stale case
                     if random.random() < 0.5:
                         print(f"⏩ Forcing manual follow-up for {c['phone']} to advance time...")
