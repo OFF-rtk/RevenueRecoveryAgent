@@ -27,10 +27,11 @@ class MockChannel(BaseChannel):
         log.info("mock_channel_send", to=to, message=message)
         return {"status": "success", "channel": "mock", "provider_id": "mock_123"}
 
-    async def send_template(self, to: str, template_name: str, parameters: list[str]) -> dict:
+    async def send_template(self, to: str, template_name: str, parameters: list[str], button_parameters: list[str] = None) -> dict:
         template = TEMPLATES.get(template_name, "[Unknown Template]")
         formatted_message = template.format(*parameters)
         import sys
         print(f"\n📝 [Agent -> {to}] (Template: {template_name})\n{formatted_message}\n", file=sys.stderr)
-        log.info("mock_channel_send_template", to=to, template_name=template_name, parameters=parameters)
-        return {"status": "success", "channel": "mock", "provider_id": "mock_template_123"}
+        log.info("mock_channel_send_template", to=to, template_name=template_name, parameters=parameters, button_parameters=button_parameters)
+        import uuid
+        return {"status": "success", "channel": self.name, "provider_id": str(uuid.uuid4())}

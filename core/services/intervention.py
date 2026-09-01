@@ -59,6 +59,8 @@ async def draft_and_send_intervention(
         str(case.customer_ref),
         str(diagnosis.causes[0] if diagnosis.causes else "unknown")
     ]
+    
+    button_parameters = [case.id.hex[:8]]
 
     # Phase 6: Enforce stopping rules before any outbound send
     try:
@@ -78,7 +80,8 @@ async def draft_and_send_intervention(
     channel_response = await channel.send_template(
         to=case.customer_ref, 
         template_name=template_name, 
-        parameters=parameters
+        parameters=parameters,
+        button_parameters=button_parameters
     )
     
     sent_representation = f"[{template_name}] {parameters}"

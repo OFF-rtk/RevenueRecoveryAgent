@@ -15,7 +15,7 @@ class BaseChannel(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def send_template(self, to: str, template_name: str, parameters: list[str]) -> dict:
+    async def send_template(self, to: str, template_name: str, parameters: list[str], button_parameters: list[str] = None) -> dict:
         """
         Send a pre-approved template message with parameters.
         Returns a dictionary containing provider response details.

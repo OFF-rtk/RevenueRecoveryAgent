@@ -82,7 +82,7 @@ class WhatsAppChannel(BaseChannel):
                     "error": str(e)
                 }
 
-    async def send_template(self, to: str, template_name: str, parameters: list[str]) -> dict:
+    async def send_template(self, to: str, template_name: str, parameters: list[str], button_parameters: list[str] = None) -> dict:
         log.info("whatsapp_channel_send_template_attempt", to=to, template_name=template_name)
         
         headers = {
@@ -98,6 +98,17 @@ class WhatsAppChannel(BaseChannel):
                     {"type": "text", "text": str(p)} for p in parameters
                 ]
             })
+            
+        if button_parameters:
+            for i, p in enumerate(button_parameters):
+                components.append({
+                    "type": "button",
+                    "sub_type": "url",
+                    "index": str(i),
+                    "parameters": [
+                        {"type": "text", "text": str(p)}
+                    ]
+                })
 
         payload = {
             "messaging_product": "whatsapp",
