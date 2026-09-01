@@ -128,7 +128,7 @@ async def call_llm(
 
     # Ensure the model always has enough room to emit a complete JSON object.
     # Callers may still override via kwargs if needed.
-    kwargs.setdefault("max_tokens", 1024)
+    kwargs.setdefault("max_tokens", 4096)
 
     for attempt in range(1, _MAX_RETRIES + 1):
         try:

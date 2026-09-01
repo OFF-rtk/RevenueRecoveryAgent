@@ -32,6 +32,7 @@ async def draft_and_send_followup(
     customer_reply: str,
     classified_state: str,
     channel: BaseChannel,
+    session: AsyncSession,
 ) -> None:
     """
     Draft a tone-matched free-text follow-up using gpt-oss-20b
@@ -63,11 +64,34 @@ async def draft_and_send_followup(
         # Fallback message
         message_to_send = "Thank you for your response. We will update your case."
         
-    await channel.send(
+    channel_response = await channel.send(
         to=case.customer_ref,
         message=message_to_send
     )
     log.info("followup_sent", case_id=str(case.id), channel=channel.name)
+
+    from core.models.interventions import Intervention
+    from core.models.audit_events import AuditEvent
+
+    # Save Intervention record so harness can see it
+    intervention = Intervention(
+        case_id=case.id,
+        channel=channel_response.get("channel", "unknown") if isinstance(channel_response, dict) else "unknown",
+        message_sent=message_to_send,
+        attempt_number=2
+    )
+    session.add(intervention)
+    
+    audit_event = AuditEvent(
+        case_id=case.id,
+        event_type="followup_sent",
+        payload={
+            "channel": channel.name,
+            "message": message_to_send,
+        }
+    )
+    session.add(audit_event)
+    await session.commit()
 
 
 async def process_inbound_reply(
@@ -171,7 +195,7 @@ async def process_inbound_reply(
     if new_status not in ("escalated", "stopped", "recovered", "disputed"):
         try:
             await check_stopping_rules(case, session, causes=None, action_type="follow_up")
-            await draft_and_send_followup(case, raw_text, state, channel)
+            await draft_and_send_followup(case, raw_text, state, channel, session)
         except StoppingRuleError as e:
             log.warning(
                 "followup_blocked_by_stopping_rule",

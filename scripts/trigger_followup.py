@@ -81,55 +81,54 @@ async def check_followup(case_id_str: str, force: bool):
                 case=case, 
                 customer_reply=latest_reply.raw_reply if latest_reply else "", 
                 classified_state=latest_reply.classified_state if latest_reply else "unknown", 
-                channel=channel
+                channel=channel,
+                session=session
             )
-            sent_representation = "LLM_Generated_Follow_Up"
-            template_used = None
+            print(f"✅ Follow-up sent and logged successfully to audit_events (via draft_and_send_followup)!")
             
         else:
             print(f"📜 Sending fallback template outside 24h window...")
             template_used = "payment_reminder_followup_v1"
             parameters = [str(case.currency), str(case.amount), str(case.customer_ref)]
             
-            await channel.send_template(
+            channel_response = await channel.send_template(
                 to=case.customer_ref,
                 template_name=template_used,
                 parameters=parameters
             )
             sent_representation = f"[{template_used}] {parameters}"
 
-        # Get the next attempt number
-        result = await session.execute(
-            select(func.max(Intervention.attempt_number)).where(Intervention.case_id == case.id)
-        )
-        last_attempt = result.scalar() or 0
-        next_attempt = last_attempt + 1
+            # Get the next attempt number
+            result = await session.execute(
+                select(func.max(Intervention.attempt_number)).where(Intervention.case_id == case.id)
+            )
+            last_attempt = result.scalar() or 0
+            next_attempt = last_attempt + 1
 
-        # Save Intervention record
-        intervention = Intervention(
-            case_id=case.id,
-            channel=channel.name,
-            message_sent=sent_representation,
-            attempt_number=next_attempt
-        )
-        session.add(intervention)
-        
-        # Save Audit Event
-        audit_event = AuditEvent(
-            case_id=case.id,
-            event_type="manual_followup_check_triggered",
-            payload={
-                "channel": channel.name,
-                "session_open": is_session_open,
-                "attempt_number": next_attempt,
-                "template_used": template_used,
-            }
-        )
-        session.add(audit_event)
-        
-        await session.commit()
-        
-        print(f"✅ Follow-up sent (Attempt #{next_attempt}) and logged successfully to audit_events!")
+            # Save Intervention record
+            intervention = Intervention(
+                case_id=case.id,
+                channel=channel.name,
+                message_sent=sent_representation,
+                attempt_number=next_attempt
+            )
+            session.add(intervention)
+            
+            # Save Audit Event
+            audit_event = AuditEvent(
+                case_id=case.id,
+                event_type="manual_followup_check_triggered",
+                payload={
+                    "channel": channel.name,
+                    "session_open": is_session_open,
+                    "attempt_number": next_attempt,
+                    "template_used": template_used,
+                }
+            )
+            session.add(audit_event)
+            
+            await session.commit()
+            print(f"✅ Follow-up template sent (Attempt #{next_attempt}) and logged successfully to audit_events!")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Manually trigger a follow-up for a case.")
