@@ -26,7 +26,8 @@ async def process_new_webhook_case(case_id: uuid.UUID) -> None:
         )
 
     # Use a new session context for the background task
-    async with async_session_factory() as session:
+    factory = async_session_factory()
+    async with factory() as session:
         try:
             # 1. Diagnose
             await diagnose_case(case_id, session)
