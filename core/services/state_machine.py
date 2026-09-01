@@ -40,13 +40,22 @@ async def draft_and_send_followup(
     """
     prompt_version = "followup_draft_v1"
     
+    payment_entity = case.raw_payload.get("payload", {}).get("payment", {}).get("entity", {}) if case.raw_payload else {}
+    
+    product_description = payment_entity.get("description", "your outstanding balance")
+    failure_reason = payment_entity.get("error_description", "your payment failed")
+    payment_method = payment_entity.get("method", "card")
+    
     context = json.dumps({
         "case_type": case.case_type,
         "amount": str(case.amount),
         "currency": case.currency,
         "customer_reply": customer_reply,
         "classified_state": classified_state,
-        "payment_link": f"https://rzp.io/i/{case.id.hex[:8]}"
+        "payment_link": f"https://rzp.io/i/{case.id.hex[:8]}",
+        "product_description": product_description,
+        "failure_reason": failure_reason,
+        "payment_method": payment_method
     }, indent=2)
     
     try:

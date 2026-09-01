@@ -27,7 +27,7 @@ from scripts.trigger_followup import check_followup
 
 # --- Configuration ---
 BASE_URL = "https://revenuerecoveryagent.onrender.com"
-# BASE_URL = "http://localhost:8001" # Uncomment for local testing if needed
+# BASE_URL = "http://localhost:8001"
 
 RAZORPAY_WEBHOOK_URL = f"{BASE_URL}/webhooks/razorpay"
 WHATSAPP_WEBHOOK_URL = f"{BASE_URL}/webhooks/whatsapp"
@@ -38,7 +38,7 @@ WHATSAPP_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "test_whatsapp_secret")
 PERSONAS = {
     "cooperative": "You are an organized and polite person. You generally trust the services you use. When contacted about an issue, you prefer to resolve it quickly and amicably. You appreciate clear communication and links to resolve problems. You do not argue unnecessarily.",
     "busy_needs_reminders": "You are extremely busy and often overwhelmed with work. You read messages quickly and often forget to reply unless prompted again. You are not malicious, just distracted. You appreciate brief, direct communication. You might promise to do something later but forget.",
-    "disputes_easily": "You are naturally skeptical and protective of your finances. You read messages critically and assume mistakes are the company's fault. You ask probing questions and demand clear explanations before taking any action. You are easily annoyed by generic corporate speak.",
+    "disputes_easily": "You are blunt and highly protective of your finances. You hate wasting time and are easily annoyed by vague corporate speak. You are quick to dispute unfamiliar charges, demanding exact details of what you are paying for. However, once you understand the charge, you are decisive and don't mince words—you will bluntly state whether you intend to pay or want to cancel.",
     "forgetful_eventually_pays": "You are well-meaning but highly disorganized. You often miss deadlines and notifications. When reminded, you are apologetic and intend to fix it, but you might need a couple of nudges to actually complete a task. You are friendly in your responses.",
     "never_responds": "You never respond to text messages from businesses. You ignore all notifications."
 }
@@ -62,6 +62,8 @@ async def send_razorpay_webhook(phone: str, client: httpx.AsyncClient):
                     "amount": 99900,
                     "currency": "INR",
                     "status": "failed",
+                    "method": "card",
+                    "description": "Razorpay Premium Annual Subscription",
                     "error_code": "BAD_REQUEST_ERROR",
                     "error_description": "Payment failed due to insufficient funds in the account.",
                     "error_source": "bank",
@@ -180,7 +182,7 @@ async def run_harness(count: int):
         })
         
     # 2. Trigger Razorpay Webhooks
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=600.0) as client:
         for c in cases:
             print(f"📨 Firing payment.failed for {c['phone']} ({c['persona']})")
             await send_razorpay_webhook(c['phone'], client)
@@ -242,7 +244,7 @@ async def run_harness(count: int):
                         print(f"💰 Persona {c['phone']} decided to PAY!")
                         c["will_pay"] = True
                         c["status"] = "resolved"
-                        async with httpx.AsyncClient(timeout=30.0) as client:
+                        async with httpx.AsyncClient(timeout=600.0) as client:
                             await send_payment_captured(c["phone"], client)
                         continue
                         
@@ -250,7 +252,7 @@ async def run_harness(count: int):
                         c["replies_sent"] += 1
                         c["conversation"].append({"role": "assistant", "content": reply_text})
                         print(f"📱 Persona -> Agent: {reply_text}")
-                        async with httpx.AsyncClient(timeout=30.0) as client:
+                        async with httpx.AsyncClient(timeout=600.0) as client:
                             await send_whatsapp_webhook(c["phone"], reply_text, client)
                     else:
                         print(f"🔕 Persona chose to ignore.")
