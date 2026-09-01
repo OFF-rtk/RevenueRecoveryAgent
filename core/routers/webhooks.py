@@ -10,12 +10,13 @@ from __future__ import annotations
 import json
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.db import get_session
 from core.models.audit_events import AuditEvent
+from core.services.pipeline import process_new_webhook_case
 from core.webhooks.razorpay import (
     MalformedPayloadError,
     UnsupportedEventError,
@@ -31,6 +32,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 @router.post("/razorpay", summary="Receive Razorpay webhook events")
 async def razorpay_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     """
@@ -59,6 +61,13 @@ async def razorpay_webhook(
             secret=settings.razorpay_webhook_secret,
             session=session,
         )
+        
+        # If a new case was created, trigger the background pipeline
+        if result.get("status") == "ok" and "case_id" in result and not result.get("status_updated"):
+            import uuid
+            case_id_str = result["case_id"]
+            background_tasks.add_task(process_new_webhook_case, uuid.UUID(case_id_str))
+
     except WebhookSignatureError as exc:
         log.error("webhook_rejected_bad_signature")
         raise HTTPException(status_code=400, detail="Invalid webhook signature") from exc
