@@ -1,0 +1,38 @@
+{
+  "cases": [
+    {
+      "case_id": "RC-0001",
+      "type": "overdue_receivable",
+      "customer_ref": "4eef1b152c38",
+      "customer_name": "Patel Logistics",
+      "amount": 129000,
+      "currency": "INR",
+      "razorpay_error_code": "wrong_bank_details",
+      "tenure_months": 20,
+      "attempts_so_far": 1,
+      "days_overdue": 39,
+      "additional_context": "",
+      "ground_truth_cause": "wrong_bank_details",
+      "expect_escalation": false,
+      "outcome_path": "resolved_via_reply",
+      "scripted_reply": "yes on it, paying right away"
+    },
+    {
+      "case_id": "FS-0001",
+      "type": "failed_subscription",
+      "customer_ref": "92f502aa097b",
+      "customer_name": "Priya",
+      "amount": 999,
+      "currency": "INR",
+      "razorpay_error_code": "wrong_cvv",
+      "tenure_months": 23,
+      "attempts_so_far": 1,
+      "days_overdue": null,
+      "additional_context": "",
+      "ground_truth_cause": "wrong_cvv",
+      "expect_escalation": false,
+      "outcome_path": "resolved_no_reply",
+      "scripted_reply": null
+    }
+  ]
+}
