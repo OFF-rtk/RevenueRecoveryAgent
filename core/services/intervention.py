@@ -52,12 +52,30 @@ async def draft_and_send_intervention(
     else:
         template_name = "invoice_reminder_notice_v1"
 
+    # Human-readable mapping for customer-facing templates
+    HUMAN_CAUSES = {
+        "insufficient_funds": "your card had insufficient funds",
+        "expired_card": "your card has expired",
+        "wrong_details": "your payment details were incorrect",
+        "bank_declined": "your bank declined the transaction",
+        "mandate_revoked": "your auto-pay mandate was revoked",
+        "technical_error": "a technical error occurred during processing",
+        "payment_forgotten": "your payment is overdue",
+        "dispute_raised": "a dispute was raised on this charge",
+        "wrong_invoice_details": "there was an issue with the invoice details",
+        "cash_flow_issue": "of an indicated cash flow issue",
+        "unknown": "an unknown error occurred",
+    }
+    
+    raw_cause = diagnosis.causes[0] if (diagnosis and diagnosis.causes) else "unknown"
+    human_cause = HUMAN_CAUSES.get(raw_cause, "an unknown error occurred")
+
     # Template params: 1: Currency, 2: Amount, 3: Customer Ref, 4: Cause
     parameters = [
         str(case.currency),
         str(case.amount),
         str(case.customer_ref),
-        str(diagnosis.causes[0] if diagnosis.causes else "unknown")
+        human_cause
     ]
     
     button_parameters = [case.id.hex[:8]]
