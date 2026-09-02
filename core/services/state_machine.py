@@ -21,96 +21,42 @@ from core.models.cases import Case
 from core.models.outcomes import Outcome
 from core.models.replies import Reply
 from core.models.state_transitions import StateTransition
-from core.services.reply_classification import classify_reply
+from core.services.reply_classification import analyze_reply
 from core.services.stopping_rules import StoppingRuleError, check_stopping_rules
 
 log = structlog.get_logger(__name__)
 
+from core.models.interventions import Intervention
+from core.models.audit_events import AuditEvent
 
-async def draft_and_send_followup(
-    case: Case,
-    customer_reply: str,
-    classified_state: str,
-    channel: BaseChannel,
-    session: AsyncSession,
-) -> None:
+async def draft_and_send_followup(case, customer_reply, classified_state, channel, session):
+    from core.llm.client import call_llm
+    
+    prompt = f"""
+    You are Razorpay's Revenue Recovery AI. 
+    The case is {case.status}. The customer previously said: "{customer_reply}".
+    They are in state: {classified_state}.
+    Draft a short, polite follow up message to bump the customer to pay their {case.currency} {case.amount} due for {case.customer_ref}.
+    Return ONLY the raw message text.
     """
-    Draft a tone-matched free-text follow-up using gpt-oss-20b
-    and send it via the channel.
-    """
-    # Count previous customer replies
-    reply_count_query = await session.execute(
-        select(func.count(Reply.id)).where(Reply.case_id == case.id)
-    )
-    reply_count = reply_count_query.scalar() or 0
+    message = await call_llm(prompt)
     
-    if reply_count >= 2:
-        prompt_version = "followup_draft_v2"
-        model = settings.groq_tier2_model
-    else:
-        prompt_version = "followup_draft_v1"
-        model = settings.groq_tier1_model
+    channel_response = await channel.send(to=case.customer_ref, message=message)
     
-    payment_entity = case.raw_payload.get("payload", {}).get("payment", {}).get("entity", {}) if case.raw_payload else {}
-    
-    product_description = payment_entity.get("description", "your outstanding balance")
-    failure_reason = payment_entity.get("error_description", "your payment failed")
-    payment_method = payment_entity.get("method", "card")
-    
-    context = json.dumps({
-        "case_type": case.case_type,
-        "amount": str(case.amount),
-        "currency": case.currency,
-        "customer_reply": customer_reply,
-        "classified_state": classified_state,
-        "payment_link": f"https://rzp.io/i/{case.id.hex[:8]}",
-        "product_description": product_description,
-        "failure_reason": failure_reason,
-        "payment_method": payment_method
-    }, indent=2)
-    
-    try:
-        llm_result = await call_llm(
-            prompt_version=prompt_version,
-            model=model,
-            user_messages=[{"role": "user", "content": context}],
-            response_format={"type": "json_object"},
-        )
-        parsed = json.loads(llm_result.content)
-        message_to_send = parsed["message"]
-    except (json.JSONDecodeError, KeyError, ValueError) as exc:
-        log.error("followup_draft_error", error=str(exc))
-        # Fallback message
-        message_to_send = "Thank you for your response. We will update your case."
-
-        
-    channel_response = await channel.send(
-        to=case.customer_ref,
-        message=message_to_send
-    )
-    log.info("followup_sent", case_id=str(case.id), channel=channel.name)
-
-    from core.models.interventions import Intervention
-    from core.models.audit_events import AuditEvent
-
-    # Save Intervention record so harness can see it
     intervention = Intervention(
         case_id=case.id,
-        channel=channel_response.get("channel", "unknown") if isinstance(channel_response, dict) else "unknown",
-        message_sent=message_to_send,
-        attempt_number=2
+        channel=channel.name,
+        message_sent=message,
+        attempt_number=3 # mock attempt
     )
     session.add(intervention)
     
-    audit_event = AuditEvent(
+    audit = AuditEvent(
         case_id=case.id,
         event_type="followup_sent",
-        payload={
-            "channel": channel.name,
-            "message": message_to_send,
-        }
+        payload={"channel": channel.name, "message": message}
     )
-    session.add(audit_event)
+    session.add(audit)
     await session.commit()
 
 
@@ -158,13 +104,24 @@ async def process_inbound_reply(
         await session.commit()
         return
         
-    # 4. Classify the reply
-    classification = await classify_reply(raw_text)
-    state = classification["state"]
+    # 4. Classify and Draft the reply in one LLM call
+    analysis = await analyze_reply(case, raw_text, session)
+    state = analysis["state"]
+    message_to_send = analysis["message"]
     
     from sqlalchemy import func
     reply.classified_state = state
     reply.classified_at = func.now()
+    
+    audit_reply = AuditEvent(
+        case_id=case.id,
+        event_type="customer_reply",
+        payload={
+            "message": raw_text,
+            "classified_state": state
+        }
+    )
+    session.add(audit_reply)
     
     # 5. Deterministic State Machine Transition
     old_status = case.status
@@ -173,7 +130,7 @@ async def process_inbound_reply(
     if state == "promise_made":
         new_status = "promise_pending"
         # We simulate follow_up scheduling by just logging it for now, or updating case if we add a column
-        follow_up_hours = classification.get("follow_up_hours")
+        follow_up_hours = analysis.get("follow_up_hours")
         if follow_up_hours:
             log.info("scheduled_follow_up", case_id=str(case.id), hours=follow_up_hours)
             
@@ -200,6 +157,17 @@ async def process_inbound_reply(
         )
         session.add(transition)
         
+        audit_trans = AuditEvent(
+            case_id=case.id,
+            event_type="state_transition",
+            payload={
+                "from_state": old_status,
+                "to_state": new_status,
+                "reason": f"customer_reply:{state}"
+            }
+        )
+        session.add(audit_trans)
+        
         # If terminal, create Outcome
         if new_status in ("escalated", "stopped", "disputed"):
             outcome = Outcome(
@@ -209,17 +177,49 @@ async def process_inbound_reply(
             )
             session.add(outcome)
             
+    # Send the drafted message to the customer if not terminal
+    if new_status not in ("escalated", "stopped", "recovered", "disputed"):
+        channel_response = await channel.send(
+            to=case.customer_ref,
+            message=message_to_send
+        )
+        log.info("followup_sent", case_id=str(case.id), channel=channel.name)
+    
+        from core.models.interventions import Intervention
+        from core.models.audit_events import AuditEvent
+    
+        # Save Intervention record so harness can see it
+        intervention = Intervention(
+            case_id=case.id,
+            channel=channel_response.get("channel", "unknown") if isinstance(channel_response, dict) else "unknown",
+            message_sent=message_to_send,
+            attempt_number=2
+        )
+        session.add(intervention)
+        
+        audit_event = AuditEvent(
+            case_id=case.id,
+            event_type="followup_sent",
+            payload={
+                "channel": channel.name,
+                "message": message_to_send,
+            }
+        )
+        session.add(audit_event)
+    
     await session.commit()
     
-    # 6. Draft and send follow-up if session is open and not terminal
-    if new_status not in ("escalated", "stopped", "recovered", "disputed"):
-        try:
-            await check_stopping_rules(case, session, causes=None, action_type="follow_up")
-            await draft_and_send_followup(case, raw_text, state, channel, session)
-        except StoppingRuleError as e:
-            log.warning(
-                "followup_blocked_by_stopping_rule",
-                case_id=str(case.id),
-                rule=e.rule,
-                reason=str(e),
-            )
+    # 7. Check stopping rules again, in case this state change or follow-up
+    # triggers a stop condition (like max interventions).
+    try:
+        await check_stopping_rules(case, session)
+    except StoppingRuleError as exc:
+        case.status = "stopped"
+        audit = AuditEvent(
+            case_id=case.id,
+            event_type="stopping_rule_triggered",
+            payload={"reason": str(exc)}
+        )
+        session.add(audit)
+        await session.commit()
+        log.info("case_stopped", case_id=str(case.id), reason=str(exc))

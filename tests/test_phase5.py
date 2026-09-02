@@ -9,7 +9,7 @@ from core.models.cases import Case
 from core.models.outcomes import Outcome
 from core.models.replies import Reply
 from core.models.state_transitions import StateTransition
-from core.services.reply_classification import classify_reply
+from core.services.reply_classification import analyze_reply
 from core.services.state_machine import process_inbound_reply
 from core.webhooks.razorpay import process_webhook
 
@@ -22,24 +22,27 @@ def mock_channel():
 
 @pytest.mark.asyncio
 async def test_classify_reply():
-    # Use real LLM or mock it? We will mock it to avoid network flakiness in fast tests.
     mock_result = {
         "state": "promise_made",
         "confidence": 0.9,
         "follow_up_hours": 24,
-        "reasoning": "Customer promised to pay"
+        "reasoning": "Customer promised to pay",
+        "message": "Thank you, we will wait.",
+        "_meta": {}
     }
     
     mock_llm_response = AsyncMock()
     mock_llm_response.content = json.dumps(mock_result)
-    mock_llm_response.prompt_version = "reply_classification_v1"
+    mock_llm_response.prompt_version = "analyze_and_respond_v1"
     mock_llm_response.prompt_hash = "mockhash"
     
     with patch("core.services.reply_classification.call_llm", AsyncMock(return_value=mock_llm_response)):
-        res = await classify_reply("I will pay tomorrow")
+        mock_case = AsyncMock()
+        mock_session = AsyncMock()
+        res = await analyze_reply(mock_case, "I will pay tomorrow", mock_session)
         assert res["state"] == "promise_made"
         assert res["follow_up_hours"] == 24
-
+        assert res["message"] == "Thank you, we will wait."
 
 @pytest.mark.asyncio
 async def test_process_inbound_reply_promise(sample_case_and_diagnosis, db_session, mock_channel):
@@ -52,20 +55,17 @@ async def test_process_inbound_reply_promise(sample_case_and_diagnosis, db_sessi
         "confidence": 0.9,
         "follow_up_hours": 24,
         "reasoning": "Test",
+        "message": "Thank you, we will wait.",
         "_meta": {}
     }
     
-    mock_followup_response = AsyncMock()
-    mock_followup_response.content = json.dumps({"message": "Thank you, we will wait."})
-    
-    with patch("core.services.state_machine.classify_reply", AsyncMock(return_value=mock_classification)):
-        with patch("core.services.state_machine.call_llm", AsyncMock(return_value=mock_followup_response)):
-            await process_inbound_reply(
-                customer_ref=case.customer_ref,
-                raw_text="I will pay tomorrow",
-                session=db_session,
-                channel=mock_channel
-            )
+    with patch("core.services.state_machine.analyze_reply", AsyncMock(return_value=mock_classification)):
+        await process_inbound_reply(
+            customer_ref=case.customer_ref,
+            raw_text="I will pay tomorrow",
+            session=db_session,
+            channel=mock_channel
+        )
             
     # Check Case status
     await db_session.refresh(case)
@@ -96,10 +96,11 @@ async def test_process_inbound_reply_opt_out(sample_case_and_diagnosis, db_sessi
         "confidence": 0.99,
         "follow_up_hours": None,
         "reasoning": "Stop",
+        "message": "Unsubscribed",
         "_meta": {}
     }
     
-    with patch("core.services.state_machine.classify_reply", AsyncMock(return_value=mock_classification)):
+    with patch("core.services.state_machine.analyze_reply", AsyncMock(return_value=mock_classification)):
         await process_inbound_reply(
             customer_ref=case.customer_ref,
             raw_text="STOP",

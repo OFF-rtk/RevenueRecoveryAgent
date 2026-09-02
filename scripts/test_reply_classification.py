@@ -1,8 +1,10 @@
 import asyncio
 import sys
 import structlog
-from typing import TypedDict
-from core.services.reply_classification import classify_reply
+import uuid
+from decimal import Decimal
+from unittest.mock import AsyncMock, MagicMock
+from core.services.reply_classification import analyze_reply
 
 # Suppress debug logs
 import logging
@@ -53,8 +55,18 @@ async def main():
         text = sample["text"]
         expected = sample["expected"]
         
+        mock_case = MagicMock()
+        mock_case.id = uuid.uuid4()
+        mock_case.case_type = "failed_subscription"
+        mock_case.amount = Decimal("999.00")
+        mock_case.currency = "INR"
+        mock_case.raw_payload = {}
+        
+        mock_session = AsyncMock()
+        mock_session.execute.return_value.scalar.return_value = 0
+        
         try:
-            result = await classify_reply(text)
+            result = await analyze_reply(mock_case, text, mock_session)
             actual = result["state"]
             
             if actual == expected:

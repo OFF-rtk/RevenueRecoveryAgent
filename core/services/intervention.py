@@ -113,6 +113,13 @@ async def draft_and_send_intervention(
     )
     session.add(intervention)
     
+    # Generate a human readable version of the template for the Audit log
+    human_readable_message = sent_representation
+    if template_name == "payment_recovery_notice_v1":
+        human_readable_message = f"Hi, this is a message from Razorpay. Your payment of {parameters[0]} {parameters[1]} for your subscription ({parameters[2]}) failed because {parameters[3]}. Please pay here to continue using the service."
+    elif template_name == "invoice_reminder_notice_v1":
+        human_readable_message = f"Hi, this is a reminder from Razorpay. Your invoice for {parameters[0]} {parameters[1]} (Ref: {parameters[2]}) is pending due to {parameters[3]}. Please complete your payment."
+
     # Save Audit Event
     audit_event = AuditEvent(
         case_id=case.id,
@@ -121,6 +128,7 @@ async def draft_and_send_intervention(
             "channel": channel_response.get("channel"),
             "template_name": template_name,
             "parameters": parameters,
+            "message": human_readable_message,
             "provider_id": channel_response.get("provider_id"),
         }
     )

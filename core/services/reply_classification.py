@@ -16,15 +16,42 @@ from core.llm.client import call_llm
 log = structlog.get_logger(__name__)
 
 
-async def classify_reply(raw_text: str) -> dict[str, Any]:
+async def analyze_reply(case: Any, raw_text: str, session: Any) -> dict[str, Any]:
     """
-    Classify a customer's free-text reply using gpt-oss-20b.
-    Returns a dict with: state, confidence, follow_up_hours, reasoning.
+    Classify a customer's free-text reply and draft a response using gpt-oss-20b.
+    Returns a dict with: state, confidence, follow_up_hours, reasoning, and message.
     """
-    prompt_version = "reply_classification_v1"
-    model = settings.groq_tier1_model  # Always use the cheap tier for reply interpretation
+    from sqlalchemy import select, func
+    from core.models.replies import Reply
+
+    # Count previous customer replies
+    reply_count_query = await session.execute(
+        select(func.count(Reply.id)).where(Reply.case_id == case.id)
+    )
+    reply_count = reply_count_query.scalar() or 0
     
-    context = f"Customer Reply: {raw_text}"
+    if reply_count >= 2:
+        model = settings.groq_tier2_model
+    else:
+        model = settings.groq_tier1_model
+        
+    prompt_version = "analyze_and_respond_v1"
+    
+    payment_entity = case.raw_payload.get("payload", {}).get("payment", {}).get("entity", {}) if case.raw_payload else {}
+    product_description = payment_entity.get("description", "your outstanding balance")
+    failure_reason = payment_entity.get("error_description", "your payment failed")
+    payment_method = payment_entity.get("method", "card")
+
+    context = json.dumps({
+        "case_type": case.case_type,
+        "amount": str(case.amount),
+        "currency": case.currency,
+        "customer_reply": raw_text,
+        "payment_link": f"https://rzp.io/i/{case.id.hex[:8]}",
+        "product_description": product_description,
+        "failure_reason": failure_reason,
+        "payment_method": payment_method
+    }, indent=2)
     
     for attempt in range(2):
         try:
@@ -37,11 +64,11 @@ async def classify_reply(raw_text: str) -> dict[str, Any]:
             parsed = json.loads(llm_result.content)
             
             # Validate required fields
-            if "state" not in parsed or "confidence" not in parsed:
-                raise ValueError("Missing 'state' or 'confidence' in JSON output")
+            if "state" not in parsed or "confidence" not in parsed or "message" not in parsed:
+                raise ValueError("Missing 'state', 'confidence', or 'message' in JSON output")
                 
             log.info(
-                "reply_classified",
+                "reply_analyzed",
                 state=parsed["state"],
                 confidence=parsed["confidence"],
                 follow_up_hours=parsed.get("follow_up_hours"),
@@ -67,6 +94,7 @@ async def classify_reply(raw_text: str) -> dict[str, Any]:
                     "confidence": 0.0,
                     "follow_up_hours": None,
                     "reasoning": f"Failed to parse LLM response: {exc}",
+                    "message": "Thank you for your response. We will update your case.",
                     "_meta": {}
                 }
     
@@ -75,5 +103,6 @@ async def classify_reply(raw_text: str) -> dict[str, Any]:
         "confidence": 0.0,
         "follow_up_hours": None,
         "reasoning": "Unexpected classification failure",
+        "message": "Thank you for your response. We will update your case.",
         "_meta": {}
     }

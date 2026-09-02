@@ -16,7 +16,8 @@ Respond with ONLY a JSON object, nothing else:
 {
   "reply_text": "string -- what you actually say back, in character",
   "action": "pay_now" | "pause_subscription" | "cancel_or_dispute" | "undecided",
-  "internal_reasoning": "string -- brief note on why you responded this way, not shown to the customer-facing system, for our own logging only"
+  "internal_reasoning": "string -- brief note on why you responded this way, not shown to the customer-facing system, for our own logging only",
+  "conversation_summary": "string -- summarize the ENTIRE conversation history up to and including this turn. This replaces the raw history array."
 }
 
 Use "pay_now" only if your reply_text itself indicates you're completing payment right now. 

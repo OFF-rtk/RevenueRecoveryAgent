@@ -43,7 +43,7 @@ async def test_draft_and_send_intervention(sample_case_and_diagnosis, db_session
     intervention = await draft_and_send_intervention(case.id, db_session, channel=channel)
 
     expected_template = "payment_recovery_notice_v1"
-    expected_params = ["INR", "100.00", "919999999999", "insufficient_funds"]
+    expected_params = ["INR", "100.00", "919999999999", "your card had insufficient funds"]
     expected_sent_text = f"[{expected_template}] {expected_params}"
 
     # Assert Intervention was saved

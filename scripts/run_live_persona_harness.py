@@ -26,8 +26,8 @@ from core.llm.client import call_llm
 from scripts.trigger_followup import check_followup
 
 # --- Configuration ---
-BASE_URL = "https://revenuerecoveryagent.onrender.com"
-# BASE_URL = "http://localhost:8001"
+BASE_URL = "http://localhost:8001"
+# BASE_URL = "https://revenuerecoveryagent.onrender.com"
 
 RAZORPAY_WEBHOOK_URL = f"{BASE_URL}/webhooks/razorpay"
 WHATSAPP_WEBHOOK_URL = f"{BASE_URL}/webhooks/whatsapp"
@@ -136,28 +136,32 @@ async def send_whatsapp_webhook(phone: str, message: str, client: httpx.AsyncCli
     resp = await client.post(WHATSAPP_WEBHOOK_URL, content=payload_bytes, headers=headers)
     return resp
 
-async def get_persona_reply(persona_type: str, conversation_history: list[dict]) -> dict:
+async def get_persona_reply(persona_type: str, conversation_summary: str, latest_agent_message: str, temperature: float) -> dict:
     if persona_type == "ignores_completely":
-        return {"reply_text": "", "action": "undecided"}
+        return {"reply_text": "", "action": "undecided", "conversation_summary": conversation_summary}
         
     messages = [
         {"role": "user", "content": f"Your assigned persona is:\n{PERSONAS[persona_type]}"}
     ]
-    messages.extend(conversation_history)
+    
+    if conversation_summary:
+        messages.append({"role": "user", "content": f"Conversation Summary so far: {conversation_summary}"})
+        
+    messages.append({"role": "user", "content": f"Latest message from Agent: {latest_agent_message}"})
     
     res = await call_llm(
         prompt_version="live_harness",
         model=settings.groq_tier1_model,
         user_messages=messages,
         response_format={"type": "json_object"},
-        temperature=round(random.uniform(0.7, 0.9), 2)
+        temperature=temperature
     )
     
     try:
         return json.loads(res.content)
     except Exception as e:
         print(f"Error parsing LLM response: {e}")
-        return {"reply_text": "", "action": "undecided"}
+        return {"reply_text": "", "action": "undecided", "conversation_summary": conversation_summary}
 
 async def run_harness(count: int):
     print(f"🚀 Starting Live Persona Harness with {count} cases...")
@@ -205,8 +209,9 @@ async def run_harness(count: int):
             "status": "active",
             "outcome": "active",
             "replies_sent": 0,
+            "temperature": round(random.uniform(0.7, 0.9), 2),
             "seen_interventions": [],
-            "conversation": []
+            "conversation_summary": ""
         })
         
     # 2. Trigger Razorpay Webhooks
@@ -225,7 +230,26 @@ async def run_harness(count: int):
     engine = create_async_engine(db_url)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     
-    MAX_ROUNDS = 10
+    # 2.5 Log Persona Configuration in Audit Trail
+    from core.models.audit_events import AuditEvent
+    async with async_session() as session:
+        for c in cases:
+            case_row = await session.scalar(
+                select(Case).where(Case.customer_ref == c["phone"]).order_by(desc(Case.created_at)).limit(1)
+            )
+            if case_row:
+                audit_event = AuditEvent(
+                    case_id=case_row.id,
+                    event_type="persona_simulation_started",
+                    payload={
+                        "persona": c["persona"],
+                        "temperature": c["temperature"]
+                    }
+                )
+                session.add(audit_event)
+        await session.commit()
+    
+    MAX_ROUNDS = 20
     
     for round_idx in range(MAX_ROUNDS):
         print(f"\n--- Round {round_idx + 1}/{MAX_ROUNDS} ---")
@@ -254,18 +278,25 @@ async def run_harness(count: int):
                     # New message from the agent!
                     c["seen_interventions"].append(str(intervention.id))
                     agent_text = intervention.message_sent
-                    c["conversation"].append({"role": "user", "content": f"Agent says: {agent_text}"})
                     print(f"🤖 Agent -> {c['phone']}: {agent_text}")
                     
-                    if c["replies_sent"] >= 5:
+                    max_replies = 8 if c["persona"] == "considering_cancellation" else 5
+                    if c["replies_sent"] >= max_replies:
                         print(f"🛑 Max replies reached for {c['phone']}. Stalling.")
                         c["status"] = "stalled"
                         continue
                         
                     # Persona LLM responds
                     start_time = time.time()
-                    llm_resp = await get_persona_reply(c["persona"], c["conversation"])
+                    llm_resp = await get_persona_reply(
+                        c["persona"], 
+                        c["conversation_summary"], 
+                        agent_text,
+                        temperature=c["temperature"]
+                    )
                     latency = time.time() - start_time
+                    
+                    c["conversation_summary"] = llm_resp.get("conversation_summary", c["conversation_summary"])
                     
                     print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('internal_reasoning')} ({latency:.2f}s)")
                     reply_text = llm_resp.get("reply_text", "").strip()
@@ -294,7 +325,6 @@ async def run_harness(count: int):
                         
                     if reply_text:
                         c["replies_sent"] += 1
-                        c["conversation"].append({"role": "assistant", "content": reply_text})
                         print(f"📱 Persona -> Agent: {reply_text}")
                         async with httpx.AsyncClient(timeout=600.0) as client:
                             await send_whatsapp_webhook(c["phone"], reply_text, client)
@@ -315,17 +345,24 @@ async def run_harness(count: int):
         print("⏳ Waiting 10 seconds for app to respond...")
         await asyncio.sleep(10)
         
+    for c in cases:
+        if c["status"] in ["active", "stalled"]:
+            c["outcome"] = "undecided_timeout"
+            c["status"] = "resolved"
+
     print("\n📊 Generating Report...")
     report = {
         "summary": {
             "total_cases": len(cases),
             "recovered_cases": sum(1 for c in cases if c["outcome"] == "recovered"),
             "retained_paused_cases": sum(1 for c in cases if c["outcome"] == "retained_paused"),
-            "lost_cases": sum(1 for c in cases if c["outcome"] in ["lost", "active", "stalled"]), # Anything not recovered or retained is lost
+            "timeout_cases": sum(1 for c in cases if c["outcome"] == "undecided_timeout"),
+            "lost_cases": sum(1 for c in cases if c["outcome"] == "lost"),
             "recovery_rate": f"{(sum(1 for c in cases if c['outcome'] == 'recovered') / len(cases)) * 100:.1f}%",
             "retention_rate": f"{((sum(1 for c in cases if c['outcome'] in ['recovered', 'retained_paused'])) / len(cases)) * 100:.1f}%",
         },
         "by_persona": {},
+        "cases_data": cases,
         "note": "This report was generated using live deployed infrastructure (real HTTP webhooks against Render) with LLM-simulated persona behavior bypassing the Meta API."
     }
     
@@ -335,12 +372,14 @@ async def run_harness(count: int):
             continue
         p_recovered = sum(1 for c in p_cases if c["outcome"] == "recovered")
         p_retained = sum(1 for c in p_cases if c["outcome"] == "retained_paused")
-        p_lost = sum(1 for c in p_cases if c["outcome"] in ["lost", "active", "stalled"])
+        p_timeout = sum(1 for c in p_cases if c["outcome"] == "undecided_timeout")
+        p_lost = sum(1 for c in p_cases if c["outcome"] == "lost")
         
         report["by_persona"][p_type] = {
             "total": len(p_cases),
             "recovered": p_recovered,
             "retained_paused": p_retained,
+            "timeout": p_timeout,
             "lost": p_lost,
             "recovery_rate": f"{(p_recovered / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%",
             "retention_rate": f"{((p_recovered + p_retained) / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%"
@@ -351,7 +390,7 @@ async def run_harness(count: int):
     with open(report_path, "w") as f:
         json.dump(report, f, indent=2)
         
-    print(json.dumps(report, indent=2))
+    print(json.dumps({k: v for k, v in report.items() if k != "cases_data"}, indent=2))
     print(f"\n✅ Done! Report saved to {report_path}")
 
 if __name__ == "__main__":
