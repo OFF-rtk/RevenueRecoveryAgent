@@ -26,8 +26,8 @@ from core.llm.client import call_llm
 from scripts.trigger_followup import check_followup
 
 # --- Configuration ---
-# BASE_URL = "https://revenuerecoveryagent.onrender.com"
-BASE_URL = "http://localhost:8001"
+BASE_URL = "https://revenuerecoveryagent.onrender.com"
+# BASE_URL = "http://localhost:8001"
 
 RAZORPAY_WEBHOOK_URL = f"{BASE_URL}/webhooks/razorpay"
 WHATSAPP_WEBHOOK_URL = f"{BASE_URL}/webhooks/whatsapp"
@@ -181,8 +181,8 @@ async def run_harness(count: int):
             ["ignores_completely"] * 4 +
             ["forgetful_promises_then_pays"] * 5
         )
-    elif count == 1:
-        personas_to_assign = ["considering_cancellation"]
+    elif count == 2:
+        personas_to_assign = ["considering_cancellation", "considering_cancellation"]
     elif count == 6:
         personas_to_assign = [
             "accidental_failure",
@@ -190,10 +190,9 @@ async def run_harness(count: int):
             "needs_payment_help",
             "considering_cancellation",
             "ignores_completely",
-            "forgetful_promises_then_pays"
         ]
     else:
-        personas_to_assign = [persona_keys[i % len(persona_keys)] for i in range(count)]
+        personas_to_assign = ["considering_cancellation"] * count
         
     random.shuffle(personas_to_assign)
     
@@ -214,7 +213,9 @@ async def run_harness(count: int):
     async with httpx.AsyncClient(timeout=600.0) as client:
         for c in cases:
             print(f"📨 Firing payment.failed for {c['phone']} ({c['persona']})")
-            await send_razorpay_webhook(c['phone'], client)
+            resp = await send_razorpay_webhook(c["phone"], client)
+            if resp.status_code != 200:
+                print(f"❌ Webhook failed: {resp.status_code} {resp.text}")
             await asyncio.sleep(0.5) # Rate limit
             
     print("⏳ Waiting 15 seconds for Render to process initial webhooks...")

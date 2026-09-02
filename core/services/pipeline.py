@@ -35,6 +35,8 @@ async def process_new_webhook_case(case_id: uuid.UUID) -> None:
             # 2. Intervene
             await draft_and_send_intervention(case_id, session, channel=channel)
             
+            await session.commit()
+            
         except DiagnosisFailedError as e:
             log.error("background_pipeline_diagnosis_failed", case_id=str(case_id), error=str(e))
         except Exception as e:
