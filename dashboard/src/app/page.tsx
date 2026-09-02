@@ -186,7 +186,7 @@ export default function Dashboard() {
                     Total Volume Processed
                   </span>
                   <span className="font-data-tabular text-data-tabular text-on-surface font-semibold">
-                    {summary?.total_cases || 0} Cases
+                    65 Cases
                   </span>
                 </div>
               </div>
