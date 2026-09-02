@@ -99,7 +99,7 @@ export default function Explorer() {
   const fetchCases = async () => {
     setLoading(true);
     try {
-      let url = "https://revenuerecoveryagent.onrender.com/api/cases";
+      let url = `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/cases`;
       if (statusFilter !== "All") {
         url += `?status=${statusFilter.toLowerCase()}`;
       }
@@ -117,7 +117,7 @@ export default function Explorer() {
     setIsDetailOpen(true);
     setTimeline([]); // clear old
     try {
-      const res = await fetch(`https://revenuerecoveryagent.onrender.com/api/cases/${c.id}/timeline`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/cases/${c.id}/timeline`);
       setTimeline(await res.json());
     } catch (e) {
       console.error(e);

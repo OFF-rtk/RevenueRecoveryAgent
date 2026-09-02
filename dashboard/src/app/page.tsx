@@ -12,8 +12,8 @@ export default function Dashboard() {
     async function fetchData() {
       try {
         const [summaryRes, personasRes] = await Promise.all([
-          fetch("https://revenuerecoveryagent.onrender.com/api/dashboard/summary"),
-          fetch("https://revenuerecoveryagent.onrender.com/api/dashboard/persona-breakdown")
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/dashboard/summary`),
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/dashboard/persona-breakdown`)
         ]);
         const summaryData = await summaryRes.json();
         const personasData = await personasRes.json();

@@ -110,8 +110,8 @@ export default function Sandbox() {
   const pollCaseData = async (caseId: string) => {
     try {
       const [chatRes, auditRes] = await Promise.all([
-        fetch(`https://revenuerecoveryagent.onrender.com/api/cases/${caseId}/chat`),
-        fetch(`https://revenuerecoveryagent.onrender.com/api/cases/${caseId}/timeline`)
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/cases/${caseId}/chat`),
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/cases/${caseId}/timeline`)
       ]);
       if (chatRes.ok) {
           const newMessages = await chatRes.json();
@@ -145,7 +145,7 @@ export default function Sandbox() {
     setActiveCaseId(null);
     try {
       setIsTyping(true);
-      await fetch("https://revenuerecoveryagent.onrender.com/api/sandbox/trigger", {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/sandbox/trigger`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, amount: 999.00, persona: customerPersona, root_cause: rootCause })
@@ -155,7 +155,7 @@ export default function Sandbox() {
       let caseId = null;
       for (let i = 0; i < 10; i++) {
         await new Promise(r => setTimeout(r, 1000));
-        const casesRes = await fetch("https://revenuerecoveryagent.onrender.com/api/cases");
+        const casesRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/cases`);
         const cases = await casesRes.json();
         // Just grab the most recent one for now
         if (cases.length > 0) {
@@ -179,7 +179,7 @@ export default function Sandbox() {
     
     if (replyType === "manual" && manualText) {
       setIsTyping(true);
-      await fetch("https://revenuerecoveryagent.onrender.com/api/sandbox/reply/manual", {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/sandbox/reply/manual`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone, text: manualText })
@@ -188,7 +188,7 @@ export default function Sandbox() {
     } else if (replyType.startsWith("persona:")) {
       setIsTyping(true);
       const persona = replyType.split(":")[1];
-      await fetch("https://revenuerecoveryagent.onrender.com/api/sandbox/reply/persona", {
+      await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/sandbox/reply/persona`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ case_id: activeCaseId, phone, persona })
@@ -198,7 +198,7 @@ export default function Sandbox() {
 
   const forceFollowup = async () => {
     if (!activeCaseId) return;
-    await fetch("https://revenuerecoveryagent.onrender.com/api/sandbox/force-cron", {
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8001"}/api/sandbox/force-cron`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ case_id: activeCaseId })
