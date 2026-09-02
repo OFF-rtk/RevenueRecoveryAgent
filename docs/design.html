@@ -1,0 +1,1306 @@
+<!-- Judge Dashboard - Batch Summary (Updated Nav) -->
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Judge Terminal - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dae2fd",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#d5e3fd",
+                        "surface-dim": "#cbdbf5",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#bec6e0",
+                        "secondary": "#515f74",
+                        "primary-container": "#131b2e",
+                        "outline": "#76777d",
+                        "on-primary-container": "#7c839b",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-surface-variant": "#45464d",
+                        "primary": "#000000",
+                        "on-surface": "#0b1c30",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-variant": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "surface-tint": "#565e74",
+                        "on-background": "#0b1c30",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#000000",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "inverse-surface": "#213145",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#d5e3fd",
+                        "surface": "#f8f9ff",
+                        "on-secondary-container": "#57657b",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-tertiary-container": "#818486",
+                        "on-primary-fixed": "#131b2e",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#191c1e",
+                        "surface-container-highest": "#d3e4fe",
+                        "outline-variant": "#c6c6cd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "density-compact": "8px",
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "margin": "24px",
+                        "density-comfortable": "16px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "mono-timestamp": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-timestamp": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "data-tabular": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background flex h-screen overflow-hidden">
+    <!-- SideNavBar (Shared Component) -->
+    <nav class="fixed left-0 top-0 h-full flex flex-col w-64 border-r border-outline-variant bg-surface z-50">
+        <!-- Header -->
+        <div class="p-6 border-b border-outline-variant flex items-center gap-4">
+            <img alt="User Profile Avatar" class="w-10 h-10 rounded-full border border-outline-variant object-cover"
+                data-alt="A clean, minimalist 3D rendering of a generic user profile avatar icon in monochromatic grayscale, set against a pristine white background. High-key studio lighting with soft shadows. Smooth matte textures."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAx6S8Yvwy3yGEULcyWL3y1B9tUB9YGkOWmz065NoPnXlKQg_u8UTq4Vq3z53RlMnaL7tW388o7AllgA2uXR9WM09e8UmE7RE9iz06bSRB016AdoTT1b3BJEFTsilkt6wJ3VBSHcFB3NC0ofkGE4bLRKWzjBf61-5aZpKIlma_mLXFcqjMdI1KMFXW99s6_lz4jo4e_d6uxWCLmFdlJRfPxiE9vfOhOWJCr7OdmSbLt6NfQ6MFWprI3dw">
+            <div>
+                <h1 class="font-headline-md text-headline-md font-bold text-on-surface">Integrity Terminal</h1>
+                <p class="font-label-caps text-label-caps text-on-surface-variant">Recovery Specialist</p>
+            </div>
+        </div>
+        <!-- Navigation Tabs -->
+        <div class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+            <!-- Dashboard (Active) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-r-2 border-primary bg-surface-container-high opacity-90 transition-opacity duration-150"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="dashboard"
+                    style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                <span class="font-label-caps text-label-caps">Dashboard</span>
+            </a>
+            <!-- Case Browser (Inactive) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                <span class="font-label-caps text-label-caps">Case Explorer</span>
+            </a>
+            <!-- New Case (Inactive) -->
+            <!-- Live Interaction (Inactive) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
+                <span class="font-label-caps text-label-caps">Live Interaction</span>
+            </a>
+        </div>
+        <!-- Footer Tabs -->
+        <div class="p-4 border-t border-outline-variant flex flex-col gap-1">
+            <button
+                class="w-full mb-4 bg-primary text-on-primary font-label-caps text-label-caps py-2 rounded flex items-center justify-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors"><span
+                    class="material-symbols-outlined text-sm" data-icon="play_circle">play_circle</span> Live
+                Interaction</button>
+            <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                <span class="font-label-caps text-label-caps">Support</span>
+            </a>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="ml-64 flex-1 flex flex-col h-full overflow-y-auto">
+        <!-- TopAppBar equivalent (for contextual header) -->
+        <header
+            class="sticky top-0 z-40 flex items-center justify-between w-full h-16 px-gutter bg-surface border-b border-outline-variant">
+            <div class="flex items-center gap-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface">Batch Summary</h2>
+                <span
+                    class="px-2 py-1 bg-surface-variant text-on-surface rounded font-mono-timestamp text-mono-timestamp">Batch
+                    ID: BT-24X9A</span>
+            </div>
+            <div class="flex items-center gap-4 text-on-surface-variant">
+                <span
+                    class="material-symbols-outlined hover:text-primary cursor-pointer transition-colors">download</span>
+                <span
+                    class="material-symbols-outlined hover:text-primary cursor-pointer transition-colors">filter_list</span>
+            </div>
+        </header>
+        <div class="p-margin max-w-container-max mx-auto w-full space-y-margin pb-20">
+            <!-- Headline Numbers -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+                <!-- Total Cases -->
+                <div
+                    class="bg-surface-container-lowest border border-outline-variant rounded p-density-comfortable flex flex-col justify-between">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[14px]">library_books</span>
+                        Total Cases Processed
+                    </p>
+                    <div class="flex items-end justify-between">
+                        <span class="font-display text-display text-on-surface">1,248</span>
+                        <span
+                            class="font-mono-timestamp text-mono-timestamp text-on-surface-variant flex items-center"><span
+                                class="material-symbols-outlined text-[12px] text-green-600">arrow_upward</span>
+                            +12%</span>
+                    </div>
+                </div>
+                <!-- Recovery Rate -->
+                <div
+                    class="bg-surface-container-lowest border border-outline-variant rounded p-density-comfortable flex flex-col justify-between">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        Overall Recovery Rate
+                    </p>
+                    <div class="flex items-end justify-between">
+                        <span class="font-display text-display text-on-surface">78.4%</span>
+                        <span
+                            class="font-mono-timestamp text-mono-timestamp text-on-surface-variant flex items-center"><span
+                                class="material-symbols-outlined text-[12px] text-red-600">arrow_downward</span>
+                            -2.1%</span>
+                    </div>
+                </div>
+                <!-- Financials -->
+                <div
+                    class="bg-surface-container-lowest border border-outline-variant rounded p-density-comfortable flex flex-col justify-between lg:col-span-2">
+                    <p class="font-label-caps text-label-caps text-on-surface-variant mb-2 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[14px]">account_balance</span>
+                        Total Recovered vs At Risk
+                    </p>
+                    <div class="flex items-end justify-between w-full">
+                        <div>
+                            <span class="font-display text-display text-on-surface">₹45.2M</span>
+                            <span
+                                class="font-mono-timestamp text-mono-timestamp text-on-surface-variant block mt-1">Recovered</span>
+                        </div>
+                        <div class="h-8 w-[1px] bg-outline-variant mx-4"></div>
+                        <div class="text-right">
+                            <span class="font-display text-display text-on-surface-variant">₹12.1M</span>
+                            <span class="font-mono-timestamp text-mono-timestamp text-on-surface-variant block mt-1">At
+                                Risk (Pending)</span>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="w-full h-1.5 bg-surface-variant mt-3 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary" style="width: 78.4%"></div>
+                    </div>
+                </div>
+            </section>
+            <!-- Evidence Sources Breakdown -->
+            <section>
+                <h3 class="font-headline-md text-headline-md text-on-surface mb-gutter">Evidence Sources Breakdown</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+                    <!-- Ground Truth Local Batch -->
+                    <div
+                        class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col overflow-hidden relative">
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br from-surface-container-low to-transparent opacity-50 pointer-events-none">
+                        </div>
+                        <div
+                            class="p-density-comfortable border-b border-outline-variant bg-surface-container-low relative z-10">
+                            <div class="flex items-center justify-between">
+                                <h4
+                                    class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">database</span>
+                                    Ground Truth Local Batch
+                                </h4>
+                                <span
+                                    class="px-2 py-0.5 bg-surface-variant text-on-surface rounded text-[10px] font-bold uppercase tracking-widest border border-outline-variant">Verified</span>
+                            </div>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Static historical datasets
+                                used for primary baseline accuracy validation.</p>
+                        </div>
+                        <div class="p-density-comfortable flex-1 flex flex-col gap-4 relative z-10">
+                            <div
+                                class="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
+                                <span class="font-data-tabular text-data-tabular text-on-surface-variant">Diagnosis
+                                    Accuracy</span>
+                                <span
+                                    class="font-data-tabular text-data-tabular text-on-surface font-semibold">94.2%</span>
+                            </div>
+                            <div
+                                class="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
+                                <span class="font-data-tabular text-data-tabular text-on-surface-variant">False Positive
+                                    Rate</span>
+                                <span
+                                    class="font-data-tabular text-data-tabular text-on-surface font-semibold">1.8%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-data-tabular text-data-tabular text-on-surface-variant">Total Volume
+                                    Processed</span>
+                                <span class="font-data-tabular text-data-tabular text-on-surface font-semibold">850
+                                    Cases</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Live LLM-Persona Batch -->
+                    <div
+                        class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col overflow-hidden relative">
+                        <!-- Simulated 'Blueprint' grid background pattern -->
+                        <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
+                            style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 16px 16px;">
+                        </div>
+                        <div
+                            class="p-density-comfortable border-b border-outline-variant bg-surface-variant relative z-10">
+                            <div class="flex items-center justify-between">
+                                <h4
+                                    class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[18px]">psychology</span>
+                                    Live LLM-Persona Batch
+                                </h4>
+                                <span
+                                    class="px-2 py-0.5 bg-surface text-on-surface rounded text-[10px] font-bold uppercase tracking-widest border border-outline-variant border-dashed">Interactive</span>
+                            </div>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Dynamic simulated
+                                interactions testing dynamic negotiation paths.</p>
+                        </div>
+                        <div class="p-density-comfortable flex-1 flex flex-col gap-4 relative z-10">
+                            <div
+                                class="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
+                                <span class="font-data-tabular text-data-tabular text-on-surface-variant">Simulated
+                                    Recovery Rate</span>
+                                <span
+                                    class="font-data-tabular text-data-tabular text-on-surface font-semibold">68.9%</span>
+                            </div>
+                            <div
+                                class="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
+                                <span class="font-data-tabular text-data-tabular text-on-surface-variant">Avg.
+                                    Interaction Turns</span>
+                                <span
+                                    class="font-data-tabular text-data-tabular text-on-surface font-semibold">4.2</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-data-tabular text-data-tabular text-on-surface-variant">Total Volume
+                                    Processed</span>
+                                <span class="font-data-tabular text-data-tabular text-on-surface font-semibold">398
+                                    Cases</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Per-Persona Recovery Table -->
+            <section>
+                <h3 class="font-headline-md text-headline-md text-on-surface mb-gutter">Per-Persona Recovery Breakdown
+                </h3>
+                <div class="bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-surface-container-low border-b border-outline-variant">
+                            <tr>
+                                <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant w-1/3">
+                                    Persona Profile</th>
+                                <th
+                                    class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                                    Attempted</th>
+                                <th
+                                    class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                                    Recovered</th>
+                                <th
+                                    class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                                    Success Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody class="font-data-tabular text-data-tabular divide-y divide-outline-variant">
+                            <tr class="hover:bg-surface-variant transition-colors group">
+                                <td class="py-3 px-4 text-on-surface flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                    Compliant / Low Resistance
+                                </td>
+                                <td class="py-3 px-4 text-right text-on-surface-variant">145</td>
+                                <td class="py-3 px-4 text-right text-on-surface">132</td>
+                                <td class="py-3 px-4 text-right">
+                                    <span
+                                        class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded font-mono-timestamp text-mono-timestamp">91.0%</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-variant transition-colors group">
+                                <td class="py-3 px-4 text-on-surface flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    Skeptical / Medium Resistance
+                                </td>
+                                <td class="py-3 px-4 text-right text-on-surface-variant">160</td>
+                                <td class="py-3 px-4 text-right text-on-surface">104</td>
+                                <td class="py-3 px-4 text-right">
+                                    <span
+                                        class="px-2 py-1 bg-surface-container text-on-surface rounded font-mono-timestamp text-mono-timestamp">65.0%</span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-surface-variant transition-colors group">
+                                <td class="py-3 px-4 text-on-surface flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    Hostile / High Resistance
+                                </td>
+                                <td class="py-3 px-4 text-right text-on-surface-variant">93</td>
+                                <td class="py-3 px-4 text-right text-on-surface">39</td>
+                                <td class="py-3 px-4 text-right">
+                                    <span
+                                        class="px-2 py-1 bg-red-100 text-red-800 rounded font-mono-timestamp text-mono-timestamp">41.9%</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+
+</html>
+
+<!-- Judge Sandbox - Live Interaction (Updated Nav) -->
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Judge Terminal - Live Interaction Sandbox</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dae2fd",
+                        "on-tertiary-fixed": "#191c1e",
+                        "tertiary": "#000000",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "on-primary-fixed": "#131b2e",
+                        "surface": "#f8f9ff",
+                        "surface-container": "#e5eeff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#191c1e",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-secondary-container": "#57657b",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#7c839b",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-surface-variant": "#45464d",
+                        "primary-container": "#131b2e",
+                        "surface-container-highest": "#d3e4fe",
+                        "inverse-surface": "#213145",
+                        "surface-tint": "#565e74",
+                        "on-tertiary-container": "#818486",
+                        "secondary-fixed": "#d5e3fd",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-container": "#d5e3fd",
+                        "surface-container-low": "#eff4ff",
+                        "primary": "#000000",
+                        "inverse-primary": "#bec6e0",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "secondary": "#515f74",
+                        "error": "#ba1a1a",
+                        "outline": "#76777d",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f8f9ff",
+                        "outline-variant": "#c6c6cd",
+                        "surface-variant": "#d3e4fe",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "density-comfortable": "16px",
+                        "margin": "24px",
+                        "gutter": "16px",
+                        "container-max": "1440px",
+                        "density-compact": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": [
+                            "Inter"
+                        ],
+                        "mono-timestamp": [
+                            "JetBrains Mono"
+                        ],
+                        "data-tabular": [
+                            "Inter"
+                        ],
+                        "body-sm": [
+                            "Inter"
+                        ],
+                        "label-caps": [
+                            "Inter"
+                        ],
+                        "display": [
+                            "Inter"
+                        ],
+                        "headline-md": [
+                            "Inter"
+                        ]
+                    },
+                    "fontSize": {
+                        "body-lg": [
+                            "16px",
+                            {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "mono-timestamp": [
+                            "12px",
+                            {
+                                "lineHeight": "16px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "data-tabular": [
+                            "13px",
+                            {
+                                "lineHeight": "16px",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "body-sm": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "label-caps": [
+                            "11px",
+                            {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "display": [
+                            "30px",
+                            {
+                                "lineHeight": "36px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "headline-md": [
+                            "20px",
+                            {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                            }
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #c6c6cd;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background font-body-sm text-body-sm antialiased overflow-hidden flex h-screen">
+    <!-- SideNavBar (Shared Component) -->
+    <nav class="fixed left-0 top-0 h-full flex flex-col h-screen w-64 border-r border-outline-variant bg-surface z-50">
+        <!-- Header -->
+        <div class="p-6 border-b border-outline-variant flex items-center gap-4">
+            <img alt="User Profile Avatar" class="w-10 h-10 rounded-full border border-outline-variant object-cover"
+                data-alt="A clean, minimalist 3D rendering of a generic user profile avatar icon in monochromatic grayscale, set against a pristine white background. High-key studio lighting with soft shadows. Smooth matte textures."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAx6S8Yvwy3yGEULcyWL3y1B9tUB9YGkOWmz065NoPnXlKQg_u8UTq4Vq3z53RlMnaL7tW388o7AllgA2uXR9WM09e8UmE7RE9iz06bSRB016AdoTT1b3BJEFTsilkt6wJ3VBSHcFB3NC0ofkGE4bLRKWzjBf61-5aZpKIlma_mLXFcqjMdI1KMFXW99s6_lz4jo4e_d6uxWCLmFdlJRfPxiE9vfOhOWJCr7OdmSbLt6NfQ6MFWprI3dw">
+            <div>
+                <h1 class="font-headline-md text-headline-md font-bold text-on-surface">Integrity Terminal</h1>
+                <p class="font-label-caps text-label-caps text-on-surface-variant">Recovery Specialist</p>
+            </div>
+        </div>
+        <!-- Navigation Tabs -->
+        <div class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+            <!-- Dashboard (Inactive) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-label-caps text-label-caps">Dashboard</span>
+            </a>
+            <!-- Case Browser (Inactive) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#"><span class="material-symbols-outlined" data-icon="folder_open">folder_open</span>
+                <span class="font-label-caps text-label-caps">Case Explorer</span></a>
+            <!-- New Case (Inactive) -->
+            <!-- Live Interaction (Active) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-r-2 border-primary bg-surface-container-high opacity-90 transition-opacity duration-150"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="play_circle"
+                    style="font-variation-settings: 'FILL' 1;">play_circle</span>
+                <span class="font-label-caps text-label-caps">Live Interaction</span>
+            </a>
+        </div>
+        <!-- Footer Tabs -->
+        <div class="p-4 border-t border-outline-variant flex flex-col gap-1">
+            <button
+                class="w-full mb-4 bg-primary text-on-primary font-label-caps text-label-caps py-2 rounded flex items-center justify-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors"><span
+                    class="material-symbols-outlined text-sm" data-icon="play_circle">play_circle</span> Live
+                Interaction</button>
+            <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                <span class="font-label-caps text-label-caps">Support</span>
+            </a>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="ml-64 flex-1 h-full flex flex-col overflow-hidden bg-background">
+        <!-- Top Action Bar -->
+        <header
+            class="h-16 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-gutter shrink-0 relative">
+            <h2 class="font-headline-md text-headline-md text-on-surface">Live Interaction Sandbox</h2>
+            <!-- Sandbox Indicator -->
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-container border border-outline-variant rounded-full px-4 py-1 flex items-center gap-2 z-10 shadow-sm opacity-80 pointer-events-none">
+                <span class="material-symbols-outlined text-outline" style="font-size: 16px;">experiment</span>
+                <span class="font-label-caps text-label-caps text-on-surface-variant">SANDBOX MODE</span>
+            </div>
+        </header>
+        <div class="flex-1 p-gutter flex gap-gutter overflow-hidden">
+            <!-- Left Panel: Case Initiator -->
+            <div
+                class="w-80 flex flex-col gap-margin border border-outline-variant rounded-lg bg-surface-container-lowest p-6 overflow-y-auto custom-scrollbar">
+                <div class="pb-4 border-b border-outline-variant">
+                    <h2 class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
+                        Case Initiator
+                    </h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Configure simulation parameters.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">CASE
+                            TYPE</label>
+                        <select
+                            class="w-full bg-surface border-outline-variant focus:border-primary focus:ring-0 rounded-DEFAULT font-body-sm text-body-sm py-2">
+                            <option>Subscription Delinquency</option>
+                            <option>Receivable Default</option>
+                            <option>Chargeback Dispute</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">ROOT CAUSE
+                            (SIMULATED)</label>
+                        <select
+                            class="w-full bg-surface border-outline-variant focus:border-primary focus:ring-0 rounded-DEFAULT font-body-sm text-body-sm py-2">
+                            <option>Card Expired</option>
+                            <option>Insufficient Funds</option>
+                            <option>Intentional Evasion</option>
+                            <option>Technical Error</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-label-caps text-label-caps text-on-surface-variant mb-2">CUSTOMER
+                            PERSONA</label>
+                        <select
+                            class="w-full bg-surface border-outline-variant focus:border-primary focus:ring-0 rounded-DEFAULT font-body-sm text-body-sm py-2">
+                            <option>Cooperative but Confused</option>
+                            <option>Aggressive / Defensive</option>
+                            <option>Unresponsive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-auto pt-6">
+                    <button
+                        class="w-full bg-primary text-on-primary py-3 rounded-DEFAULT font-data-tabular text-data-tabular flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">play_arrow</span>
+                        Trigger Case
+                    </button>
+                </div>
+            </div>
+            <!-- Center Panel: Live Chat Window -->
+            <div
+                class="flex-1 flex flex-col border border-outline-variant rounded-lg bg-surface-container-lowest overflow-hidden">
+                <!-- Chat Header -->
+                <div
+                    class="h-16 border-b border-outline-variant bg-surface flex items-center justify-between px-6 shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center">
+                            <span class="material-symbols-outlined text-on-surface-variant">person</span>
+                        </div>
+                        <div>
+                            <h3 class="font-data-tabular text-data-tabular text-on-surface">Simulated Customer (ID:
+                                884-X2)</h3>
+                            <div class="flex items-center gap-1 text-emerald-600">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span class="font-label-caps text-label-caps">ONLINE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button
+                            class="p-2 text-on-surface-variant hover:bg-surface-container rounded-DEFAULT transition-colors">
+                            <span class="material-symbols-outlined">more_vert</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Chat Canvas -->
+                <div
+                    class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 bg-surface-container-lowest custom-scrollbar">
+                    <!-- System Message -->
+                    <div class="flex justify-center my-2">
+                        <span
+                            class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-full font-mono-timestamp text-mono-timestamp text-[10px]">Simulation
+                            Started: 14:02:45 UTC</span>
+                    </div>
+                    <!-- Agent Message (Right) -->
+                    <div class="flex justify-end">
+                        <div class="max-w-[70%] flex flex-col items-end">
+                            <div
+                                class="bg-primary-container text-on-primary-container p-3 rounded-xl rounded-tr-sm border border-outline-variant/20 shadow-sm">
+                                <p class="font-body-sm text-body-sm">Hello. This is the automated recovery system. We
+                                    noticed your payment of $124.00 failed processing today. Can you please update your
+                                    payment method?</p>
+                            </div>
+                            <span
+                                class="font-mono-timestamp text-mono-timestamp text-on-surface-variant mt-1 text-[10px]">14:02:48
+                                • Automated Trigger</span>
+                        </div>
+                    </div>
+                    <!-- Customer Message (Left) -->
+                    <div class="flex justify-start">
+                        <div class="max-w-[70%] flex flex-col items-start">
+                            <div
+                                class="bg-surface text-on-surface p-3 rounded-xl rounded-tl-sm border border-outline-variant shadow-sm">
+                                <p class="font-body-sm text-body-sm">I thought I updated my card last week? What card
+                                    are you trying to charge?</p>
+                            </div>
+                            <span
+                                class="font-mono-timestamp text-mono-timestamp text-on-surface-variant mt-1 text-[10px]">14:05:12
+                                • Simulated Reply</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Reply Controls -->
+                <div class="p-4 border-t border-outline-variant bg-surface shrink-0 flex flex-col gap-3">
+                    <div class="flex gap-2 items-center">
+                        <span class="font-label-caps text-label-caps text-on-surface-variant px-2">JUDGE OVERRIDE</span>
+                        <div class="h-px flex-1 bg-outline-variant/50"></div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="flex-1 relative">
+                            <textarea
+                                class="w-full bg-surface-container-lowest border-outline-variant focus:border-primary focus:ring-0 rounded-DEFAULT font-body-sm text-body-sm py-2 px-3 resize-none"
+                                placeholder="Type manual response to test system routing..." rows="2"></textarea>
+                        </div>
+                        <div class="w-48 flex flex-col gap-2">
+                            <select
+                                class="w-full bg-surface-container-lowest border-outline-variant focus:border-primary focus:ring-0 rounded-DEFAULT font-label-caps text-label-caps py-1.5 h-8">
+                                <option>Run Persona: Defensive</option>
+                                <option>Run Persona: Confused</option>
+                                <option>Trigger Delay (5m)</option>
+                            </select>
+                            <button
+                                class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container py-1.5 rounded-DEFAULT font-data-tabular text-data-tabular flex items-center justify-center gap-1 h-8">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">send</span>
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Panel: Live Audit Trail -->
+            <div
+                class="w-80 flex flex-col gap-4 border border-outline-variant rounded-lg bg-surface-container-lowest p-6 overflow-hidden">
+                <div class="pb-4 border-b border-outline-variant flex justify-between items-end shrink-0">
+                    <div>
+                        <h2 class="font-body-lg text-body-lg font-semibold text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">history</span>
+                            Audit Trail
+                        </h2>
+                    </div>
+                    <div class="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-DEFAULT">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="font-label-caps text-label-caps">LIVE</span>
+                    </div>
+                </div>
+                <!-- Timeline -->
+                <div class="flex-1 overflow-y-auto pr-2 relative custom-scrollbar">
+                    <div class="relative border-l border-outline-variant ml-3 pb-6">
+                        <!-- Event 1 -->
+                        <div class="mb-6 relative pl-6">
+                            <div
+                                class="absolute w-6 h-6 bg-surface-container-lowest border-2 border-primary rounded-full -left-[12.5px] top-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary" style="font-size: 12px;">add</span>
+                            </div>
+                            <div>
+                                <p class="font-data-tabular text-data-tabular text-on-surface font-medium">Case
+                                    Simulation Created</p>
+                                <p class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">14:02:40</p>
+                                <div
+                                    class="mt-2 text-xs bg-surface border border-outline-variant p-2 rounded-DEFAULT font-mono-timestamp">
+                                    Params: Sub_Delinq, Card_Exp
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Event 2 -->
+                        <div class="mb-6 relative pl-6">
+                            <div
+                                class="absolute w-6 h-6 bg-surface-container-lowest border-2 border-outline-variant rounded-full -left-[12.5px] top-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-on-surface-variant"
+                                    style="font-size: 12px;">mail</span>
+                            </div>
+                            <div>
+                                <p class="font-data-tabular text-data-tabular text-on-surface font-medium">Initial
+                                    Outreach Sent</p>
+                                <p class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">14:02:48</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[12px]">Channel:
+                                    SMS (Simulated)</p>
+                            </div>
+                        </div>
+                        <!-- Event 3 -->
+                        <div class="mb-6 relative pl-6">
+                            <div
+                                class="absolute w-6 h-6 bg-surface-container-lowest border-2 border-outline-variant rounded-full -left-[12.5px] top-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-on-surface-variant"
+                                    style="font-size: 12px;">person</span>
+                            </div>
+                            <div>
+                                <p class="font-data-tabular text-data-tabular text-on-surface font-medium">Customer
+                                    Reply Received</p>
+                                <p class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">14:05:12</p>
+                                <div class="mt-1 flex gap-2">
+                                    <span
+                                        class="bg-amber-100 text-amber-800 font-label-caps text-label-caps px-1.5 py-0.5 rounded-DEFAULT">INTENT:
+                                        CONFUSION</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Event 4: Pending -->
+                        <div class="relative pl-6 opacity-50">
+                            <div
+                                class="absolute w-6 h-6 bg-surface-container-lowest border-2 border-outline-variant border-dashed rounded-full -left-[12.5px] top-0 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-on-surface-variant"
+                                    style="font-size: 12px;">hourglass_empty</span>
+                            </div>
+                            <div>
+                                <p class="font-data-tabular text-data-tabular text-on-surface italic">Awaiting Agent
+                                    Routing...</p>
+                                <p class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">Pending</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-outline-variant shrink-0 mt-auto">
+                    <button
+                        class="w-full bg-surface-container-lowest border border-outline-variant text-on-surface py-2 rounded-DEFAULT font-data-tabular text-data-tabular flex items-center justify-center gap-2 hover:bg-surface transition-colors">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">update</span>
+                        Check Follow-ups Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
+
+<!-- Design System -->
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Judge Terminal - Case Browser</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#dae2fd",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#d5e3fd",
+                        "surface-dim": "#cbdbf5",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#bec6e0",
+                        "secondary": "#515f74",
+                        "primary-container": "#131b2e",
+                        "outline": "#76777d",
+                        "on-primary-container": "#7c839b",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-surface-variant": "#45464d",
+                        "primary": "#000000",
+                        "on-surface": "#0b1c30",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-variant": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "surface-tint": "#565e74",
+                        "on-background": "#0b1c30",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#000000",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#eff4ff",
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "inverse-surface": "#213145",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#d5e3fd",
+                        "surface": "#f8f9ff",
+                        "on-secondary-container": "#57657b",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-tertiary-container": "#818486",
+                        "on-primary-fixed": "#131b2e",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#191c1e",
+                        "surface-container-highest": "#d3e4fe",
+                        "outline-variant": "#c6c6cd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "density-compact": "8px",
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "margin": "24px",
+                        "density-comfortable": "16px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "mono-timestamp": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "data-tabular": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "mono-timestamp": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "data-tabular": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display": ["30px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #c6c6cd;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-background font-body-sm text-body-sm antialiased overflow-hidden flex h-screen">
+    <!-- SideNavBar (Shared Component) -->
+    <nav class="fixed left-0 top-0 h-full flex flex-col h-screen w-64 border-r border-outline-variant bg-surface z-50">
+        <!-- Header -->
+        <div class="p-6 border-b border-outline-variant flex items-center gap-4">
+            <img alt="User Profile Avatar" class="w-10 h-10 rounded-full border border-outline-variant object-cover"
+                data-alt="A clean, minimalist 3D rendering of a generic user profile avatar icon in monochromatic grayscale, set against a pristine white background. High-key studio lighting with soft shadows. Smooth matte textures."
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAx6S8Yvwy3yGEULcyWL3y1B9tUB9YGkOWmz065NoPnXlKQg_u8UTq4Vq3z53RlMnaL7tW388o7AllgA2uXR9WM09e8UmE7RE9iz06bSRB016AdoTT1b3BJEFTsilkt6wJ3VBSHcFB3NC0ofkGE4bLRKWzjBf61-5aZpKIlma_mLXFcqjMdI1KMFXW99s6_lz4jo4e_d6uxWCLmFdlJRfPxiE9vfOhOWJCr7OdmSbLt6NfQ6MFWprI3dw">
+            <div>
+                <h1 class="font-headline-md text-headline-md font-bold text-on-surface">Integrity Terminal</h1>
+                <p class="font-label-caps text-label-caps text-on-surface-variant">Recovery Specialist</p>
+            </div>
+        </div>
+        <!-- Navigation Tabs -->
+        <div class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+            <!-- Dashboard (Inactive) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                <span class="font-label-caps text-label-caps">Dashboard</span>
+            </a>
+            <!-- Case Browser (Active) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-r-2 border-primary bg-surface-container-high opacity-90 transition-opacity duration-150"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="folder_open"
+                    style="font-variation-settings: 'FILL' 1;">folder_open</span>
+                <span class="font-label-caps text-label-caps">Case Browser</span>
+            </a>
+            <!-- New Case (Inactive) -->
+            <!-- Live Interaction (Inactive) -->
+            <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="play_circle">play_circle</span>
+                <span class="font-label-caps text-label-caps">Live Interaction</span>
+            </a>
+        </div>
+        <!-- Footer Tabs -->
+        <div class="p-4 border-t border-outline-variant flex flex-col gap-1">
+            <button
+                class="w-full mb-4 bg-primary text-on-primary font-label-caps text-label-caps py-2 rounded flex items-center justify-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors"><span
+                    class="material-symbols-outlined text-sm" data-icon="play_circle">play_circle</span> Live
+                Interaction</button>
+            <a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200"
+                href="#">
+                <span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                <span class="font-label-caps text-label-caps">Support</span>
+            </a>
+        </div>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="ml-64 flex-1 flex flex-col h-full overflow-hidden bg-background">
+        <!-- Top Action Bar -->
+        <header
+            class="h-16 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between px-gutter shrink-0">
+            <h2 class="font-headline-md text-headline-md text-on-surface">Case Explorer</h2>
+            <div class="flex items-center gap-unit">
+                <!-- Search -->
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined absolute left-3 text-on-surface-variant"
+                        data-icon="search">search</span>
+                    <input
+                        class="pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all"
+                        placeholder="Search case ID..." type="text">
+                </div>
+                <button
+                    class="p-2 text-on-surface-variant border border-outline-variant bg-surface-container-lowest rounded hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+                    <span class="font-label-caps text-label-caps">Filters</span>
+                </button>
+                <button
+                    class="p-2 text-on-surface-variant border border-outline-variant bg-surface-container-lowest rounded hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                    <span class="material-symbols-outlined" data-icon="download">download</span>
+                    <span class="font-label-caps text-label-caps">Export</span>
+                </button>
+            </div>
+        </header>
+        <!-- Filter Bar -->
+        <div
+            class="bg-surface border-b border-outline-variant p-4 flex gap-4 shrink-0 overflow-x-auto custom-scrollbar">
+            <select
+                class="bg-surface-container-lowest border border-outline-variant rounded px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                <option>Outcome: All</option>
+                <option>Recovered</option>
+                <option>Escalated</option>
+                <option>Disputed</option>
+            </select>
+            <select
+                class="bg-surface-container-lowest border border-outline-variant rounded px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                <option>Case Type: All</option>
+                <option>Financial</option>
+                <option>Compliance</option>
+                <option>Operational</option>
+            </select>
+            <select
+                class="bg-surface-container-lowest border border-outline-variant rounded px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                <option>Diagnosis Tier: All</option>
+                <option>Tier 1 (Automated)</option>
+                <option>Tier 2 (Supervised)</option>
+                <option>Tier 3 (Manual)</option>
+            </select>
+            <div class="ml-auto flex items-center gap-2">
+                <span class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">Showing 245 Cases</span>
+            </div>
+        </div>
+        <!-- Main Layout Split -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Data Table (Left) -->
+            <div class="flex-1 overflow-y-auto custom-scrollbar bg-surface-container-lowest p-gutter"
+                id="table-container">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-surface-container-lowest z-10 border-b border-outline-variant">
+                        <tr>
+                            <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">Case ID</th>
+                            <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">Cause</th>
+                            <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                                Amount</th>
+                            <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-center">
+                                Tier</th>
+                            <th class="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="font-data-tabular text-data-tabular">
+                        <!-- Row 1: Selected State -->
+                        <tr class="border-b border-outline-variant bg-surface-container-low cursor-pointer transition-colors"
+                            onclick="toggleDetailPanel()">
+                            <td class="py-3 px-4 font-mono-timestamp text-mono-timestamp text-primary font-medium">
+                                #TX-88902</td>
+                            <td class="py-3 px-4 text-on-surface">Compliance Violation - R4</td>
+                            <td class="py-3 px-4 text-right text-on-surface">$12,450.00</td>
+                            <td class="py-3 px-4 text-center text-on-surface-variant">T2</td>
+                            <td class="py-3 px-4">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-caps text-label-caps font-bold">Escalated</span>
+                            </td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr class="border-b border-outline-variant hover:bg-surface cursor-pointer transition-colors">
+                            <td class="py-3 px-4 font-mono-timestamp text-mono-timestamp text-on-surface-variant">
+                                #TX-88901</td>
+                            <td class="py-3 px-4 text-on-surface">Payment Routing Failure</td>
+                            <td class="py-3 px-4 text-right text-on-surface">$3,200.50</td>
+                            <td class="py-3 px-4 text-center text-on-surface-variant">T1</td>
+                            <td class="py-3 px-4">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-label-caps font-bold">Recovered</span>
+                            </td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr class="border-b border-outline-variant hover:bg-surface cursor-pointer transition-colors">
+                            <td class="py-3 px-4 font-mono-timestamp text-mono-timestamp text-on-surface-variant">
+                                #TX-88899</td>
+                            <td class="py-3 px-4 text-on-surface">Unauthorized Access - IP Anomaly</td>
+                            <td class="py-3 px-4 text-right text-on-surface">N/A</td>
+                            <td class="py-3 px-4 text-center text-on-surface-variant">T3</td>
+                            <td class="py-3 px-4">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-caps text-label-caps font-bold">Disputed</span>
+                            </td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr class="border-b border-outline-variant hover:bg-surface cursor-pointer transition-colors">
+                            <td class="py-3 px-4 font-mono-timestamp text-mono-timestamp text-on-surface-variant">
+                                #TX-88898</td>
+                            <td class="py-3 px-4 text-on-surface">Refund Processing Delay</td>
+                            <td class="py-3 px-4 text-right text-on-surface">$450.00</td>
+                            <td class="py-3 px-4 text-center text-on-surface-variant">T1</td>
+                            <td class="py-3 px-4">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-highest text-on-surface font-label-caps text-label-caps font-bold">Recovered</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Detail Panel (Right Side, defaults to open for this view) -->
+            <aside
+                class="w-96 border-l border-outline-variant bg-surface flex flex-col h-full transform transition-transform duration-300 translate-x-0"
+                id="detail-panel">
+                <!-- Panel Header -->
+                <div
+                    class="p-4 border-b border-outline-variant bg-surface-container-lowest flex items-center justify-between sticky top-0 z-20">
+                    <div>
+                        <h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Case #TX-88902</h3>
+                        <p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Audit Trail</p>
+                    </div>
+                    <button
+                        class="p-1.5 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors"
+                        onclick="toggleDetailPanel()">
+                        <span class="material-symbols-outlined" data-icon="close">close</span>
+                    </button>
+                </div>
+                <!-- Panel Content (Timeline) -->
+                <div class="p-6 flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="relative border-l border-outline-variant ml-3 pb-6">
+                        <!-- Event 1 -->
+                        <div class="mb-8 relative pl-6">
+                            <div
+                                class="absolute w-3 h-3 bg-surface border-2 border-outline-variant rounded-full -left-[6.5px] top-1">
+                            </div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">10:45:02
+                                    UTC</span>
+                                <span
+                                    class="px-1.5 py-0.5 bg-surface-container-low border border-outline-variant rounded font-label-caps text-[9px] text-on-surface-variant">System</span>
+                            </div>
+                            <p class="font-data-tabular text-data-tabular text-on-surface font-medium">Anomaly Detected
+                            </p>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Compliance flag R4
+                                triggered on transaction cluster.</p>
+                        </div>
+                        <!-- Event 2 -->
+                        <div class="mb-8 relative pl-6">
+                            <div
+                                class="absolute w-3 h-3 bg-surface border-2 border-outline-variant rounded-full -left-[6.5px] top-1">
+                            </div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">10:45:05
+                                    UTC</span>
+                                <span
+                                    class="px-1.5 py-0.5 bg-primary-fixed border border-outline-variant rounded font-label-caps text-[9px] text-on-primary-fixed">Agent:
+                                    AURA</span>
+                            </div>
+                            <p class="font-data-tabular text-data-tabular text-on-surface font-medium">Automated
+                                Recovery Initiated</p>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Attempting protocol
+                                sequence Alpha-9.</p>
+                        </div>
+                        <!-- Event 3: Stopping Rule Trigger (Highlight) -->
+                        <div class="mb-8 relative pl-6">
+                            <div
+                                class="absolute w-4 h-4 bg-error-container border-2 border-error rounded-full -left-[8.5px] top-0.5 flex items-center justify-center">
+                                <div class="w-1.5 h-1.5 bg-error rounded-full"></div>
+                            </div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-mono-timestamp text-mono-timestamp text-error font-medium">10:48:12
+                                    UTC</span>
+                                <span
+                                    class="px-1.5 py-0.5 bg-error-container border border-error rounded font-label-caps text-[9px] text-on-error-container font-bold">Stopping
+                                    Rule</span>
+                            </div>
+                            <div class="bg-error-container border border-error rounded p-3 mt-2">
+                                <p class="font-data-tabular text-data-tabular text-on-error-container font-bold">
+                                    Max-Retry Hit</p>
+                                <p class="font-body-sm text-body-sm text-on-error-container mt-1 opacity-90">Automated
+                                    sequence failed 3 consecutive verification checks. Terminating auto-recovery to
+                                    prevent data lock.</p>
+                            </div>
+                        </div>
+                        <!-- Event 4: Escalation (Highlight) -->
+                        <div class="relative pl-6">
+                            <div
+                                class="absolute w-4 h-4 bg-secondary-container border-2 border-secondary rounded-full -left-[8.5px] top-0.5 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[10px] text-on-secondary-container"
+                                    data-icon="priority_high">priority_high</span>
+                            </div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-mono-timestamp text-mono-timestamp text-on-surface-variant">10:49:00
+                                    UTC</span>
+                                <span
+                                    class="px-1.5 py-0.5 bg-secondary-container border border-secondary rounded font-label-caps text-[9px] text-on-secondary-container font-bold">Escalation</span>
+                            </div>
+                            <div class="bg-surface-container-high border border-outline-variant rounded p-3 mt-2">
+                                <p class="font-data-tabular text-data-tabular text-on-surface font-bold">Retry-Exhausted
+                                    State</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Case elevated to Tier
+                                    2 (Supervised) queue for manual review. Awaiting Specialist assignment.</p>
+                                <button
+                                    class="mt-3 w-full bg-primary text-on-primary font-label-caps text-label-caps py-2 rounded flex items-center justify-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors">
+                                    Take Ownership
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+    <script>
+        function toggleDetailPanel() {
+            const panel = document.getElementById('detail-panel');
+            if (panel.classList.contains('translate-x-0')) {
+                panel.classList.remove('translate-x-0');
+                panel.classList.add('translate-x-full');
+                setTimeout(() => panel.classList.add('hidden'), 300); // Wait for transition
+            } else {
+                panel.classList.remove('hidden');
+                // Force reflow
+                void panel.offsetWidth;
+                panel.classList.remove('translate-x-full');
+                panel.classList.add('translate-x-0');
+            }
+        }
+    </script>
+</body>
+
+</html>
