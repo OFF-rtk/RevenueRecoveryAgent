@@ -26,8 +26,7 @@ from core.llm.client import call_llm
 from scripts.trigger_followup import check_followup
 
 # --- Configuration ---
-BASE_URL = "http://localhost:8001"
-# BASE_URL = "https://revenuerecoveryagent.onrender.com"
+BASE_URL = os.getenv("BASE_URL", "https://revenuerecoveryagent.onrender.com")
 
 RAZORPAY_WEBHOOK_URL = f"{BASE_URL}/webhooks/razorpay"
 WHATSAPP_WEBHOOK_URL = f"{BASE_URL}/webhooks/whatsapp"
