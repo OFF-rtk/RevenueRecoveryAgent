@@ -23,4 +23,3 @@ Use "pay_now" only if your reply_text itself indicates you're completing payment
 Use "pause_subscription" if you have explicitly decided to pause the subscription.
 Use "cancel_or_dispute" if you're explicitly declining or disputing. 
 Use "undecided" if you're still thinking, asking a question, or deferring to later (e.g. a promise to pay another time).
-IMPORTANT: If the conversation has gone back and forth 1 or 2 times, you MUST make a final decision (pay, pause, or cancel) instead of remaining undecided indefinitely.
