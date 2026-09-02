@@ -26,8 +26,8 @@ from core.llm.client import call_llm
 from scripts.trigger_followup import check_followup
 
 # --- Configuration ---
-BASE_URL = "https://revenuerecoveryagent.onrender.com"
-# BASE_URL = "http://localhost:8001"
+# BASE_URL = "https://revenuerecoveryagent.onrender.com"
+BASE_URL = "http://localhost:8001"
 
 RAZORPAY_WEBHOOK_URL = f"{BASE_URL}/webhooks/razorpay"
 WHATSAPP_WEBHOOK_URL = f"{BASE_URL}/webhooks/whatsapp"
@@ -138,7 +138,7 @@ async def send_whatsapp_webhook(phone: str, message: str, client: httpx.AsyncCli
 
 async def get_persona_reply(persona_type: str, conversation_history: list[dict]) -> dict:
     if persona_type == "ignores_completely":
-        return {"reply_text": "", "will_pay_now": None}
+        return {"reply_text": "", "action": "undecided"}
         
     messages = [
         {"role": "user", "content": f"Your assigned persona is:\n{PERSONAS[persona_type]}"}
@@ -149,14 +149,15 @@ async def get_persona_reply(persona_type: str, conversation_history: list[dict])
         prompt_version="live_harness",
         model=settings.groq_tier1_model,
         user_messages=messages,
-        response_format={"type": "json_object"}
+        response_format={"type": "json_object"},
+        temperature=round(random.uniform(0.7, 0.9), 2)
     )
     
     try:
         return json.loads(res.content)
     except Exception as e:
         print(f"Error parsing LLM response: {e}")
-        return {"reply_text": "", "will_pay_now": None}
+        return {"reply_text": "", "action": "undecided"}
 
 async def run_harness(count: int):
     print(f"🚀 Starting Live Persona Harness with {count} cases...")
@@ -181,7 +182,7 @@ async def run_harness(count: int):
             ["forgetful_promises_then_pays"] * 5
         )
     elif count == 1:
-        personas_to_assign = ["suspicious_payer"]
+        personas_to_assign = ["considering_cancellation"]
     elif count == 6:
         personas_to_assign = [
             "accidental_failure",
@@ -203,7 +204,7 @@ async def run_harness(count: int):
             "phone": phone,
             "persona": persona,
             "status": "active",
-            "will_pay": False,
+            "outcome": "active",
             "replies_sent": 0,
             "seen_interventions": [],
             "conversation": []
@@ -267,13 +268,27 @@ async def run_harness(count: int):
                     
                     print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('internal_reasoning')} ({latency:.2f}s)")
                     reply_text = llm_resp.get("reply_text", "").strip()
+                    action = llm_resp.get("action", "undecided")
                     
-                    if llm_resp.get("will_pay_now") is True:
+                    if action == "pay_now":
                         print(f"💰 Persona {c['phone']} decided to PAY!")
-                        c["will_pay"] = True
+                        c["outcome"] = "recovered"
                         c["status"] = "resolved"
                         async with httpx.AsyncClient(timeout=600.0) as client:
                             await send_payment_captured(c["phone"], client)
+                        continue
+                        
+                    elif action == "pause_subscription":
+                        print(f"⏸️ Persona {c['phone']} decided to PAUSE!")
+                        c["outcome"] = "retained_paused"
+                        c["status"] = "resolved"
+                        # Do not send webhook, just let conversation end.
+                        continue
+                        
+                    elif action == "cancel_or_dispute":
+                        print(f"❌ Persona {c['phone']} decided to CANCEL/DISPUTE!")
+                        c["outcome"] = "lost"
+                        c["status"] = "resolved"
                         continue
                         
                     if reply_text:
@@ -303,8 +318,11 @@ async def run_harness(count: int):
     report = {
         "summary": {
             "total_cases": len(cases),
-            "recovered_cases": sum(1 for c in cases if c["will_pay"]),
-            "recovery_rate": f"{(sum(1 for c in cases if c['will_pay']) / len(cases)) * 100:.1f}%",
+            "recovered_cases": sum(1 for c in cases if c["outcome"] == "recovered"),
+            "retained_paused_cases": sum(1 for c in cases if c["outcome"] == "retained_paused"),
+            "lost_cases": sum(1 for c in cases if c["outcome"] in ["lost", "active", "stalled"]), # Anything not recovered or retained is lost
+            "recovery_rate": f"{(sum(1 for c in cases if c['outcome'] == 'recovered') / len(cases)) * 100:.1f}%",
+            "retention_rate": f"{((sum(1 for c in cases if c['outcome'] in ['recovered', 'retained_paused'])) / len(cases)) * 100:.1f}%",
         },
         "by_persona": {},
         "note": "This report was generated using live deployed infrastructure (real HTTP webhooks against Render) with LLM-simulated persona behavior bypassing the Meta API."
@@ -314,11 +332,17 @@ async def run_harness(count: int):
         p_cases = [c for c in cases if c["persona"] == p_type]
         if not p_cases:
             continue
-        p_recovered = sum(1 for c in p_cases if c["will_pay"])
+        p_recovered = sum(1 for c in p_cases if c["outcome"] == "recovered")
+        p_retained = sum(1 for c in p_cases if c["outcome"] == "retained_paused")
+        p_lost = sum(1 for c in p_cases if c["outcome"] in ["lost", "active", "stalled"])
+        
         report["by_persona"][p_type] = {
             "total": len(p_cases),
             "recovered": p_recovered,
-            "rate": f"{(p_recovered / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%"
+            "retained_paused": p_retained,
+            "lost": p_lost,
+            "recovery_rate": f"{(p_recovered / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%",
+            "retention_rate": f"{((p_recovered + p_retained) / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%"
         }
         
     report_path = Path("reports/live_persona_report.json")

@@ -11,7 +11,7 @@ from datetime import timedelta
 from typing import Any
 
 import structlog
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.channels.base import BaseChannel
@@ -38,7 +38,18 @@ async def draft_and_send_followup(
     Draft a tone-matched free-text follow-up using gpt-oss-20b
     and send it via the channel.
     """
-    prompt_version = "followup_draft_v1"
+    # Count previous customer replies
+    reply_count_query = await session.execute(
+        select(func.count(Reply.id)).where(Reply.case_id == case.id)
+    )
+    reply_count = reply_count_query.scalar() or 0
+    
+    if reply_count >= 2:
+        prompt_version = "followup_draft_v2"
+        model = settings.groq_tier2_model
+    else:
+        prompt_version = "followup_draft_v1"
+        model = settings.groq_tier1_model
     
     payment_entity = case.raw_payload.get("payload", {}).get("payment", {}).get("entity", {}) if case.raw_payload else {}
     
@@ -61,7 +72,7 @@ async def draft_and_send_followup(
     try:
         llm_result = await call_llm(
             prompt_version=prompt_version,
-            model=settings.groq_tier1_model,
+            model=model,
             user_messages=[{"role": "user", "content": context}],
             response_format={"type": "json_object"},
         )

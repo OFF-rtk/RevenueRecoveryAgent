@@ -104,8 +104,8 @@ async def call_llm(
     """
     from core.config import settings  # lazy import avoids circular startup issues
 
-    # ── Enforce determinism ─────────────────────────────────────────────────
-    kwargs.pop("temperature", None)  # callers must not set this
+    # ── Enforce determinism (default) ───────────────────────────────────────
+    temperature = kwargs.pop("temperature", 0)  # default to 0 for agent, allow override for testing
 
     # ── Load and hash the versioned prompt ──────────────────────────────────
     system_prompt, prompt_hash = _load_prompt(prompt_version)
@@ -122,6 +122,7 @@ async def call_llm(
         prompt_hash=prompt_hash,
         model=model,
         message_count=len(messages),
+        temperature=temperature,
     )
 
     last_error: Exception | None = None
@@ -136,7 +137,7 @@ async def call_llm(
             response = await client.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0,
+                temperature=temperature,
                 **kwargs,
             )
             latency_ms = (time.monotonic() - t0) * 1000

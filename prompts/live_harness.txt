@@ -15,11 +15,11 @@ predetermined by your persona alone.
 Respond with ONLY a JSON object, nothing else:
 {
   "reply_text": "string -- what you actually say back, in character",
-  "will_pay_now": true | false | null,
+  "action": "pay_now" | "pause_subscription" | "cancel_or_dispute" | "undecided",
   "internal_reasoning": "string -- brief note on why you responded this way, not shown to the customer-facing system, for our own logging only"
 }
 
-Use will_pay_now: true only if your reply_text itself indicates you're
-completing payment right now. Use false if you're explicitly declining or
-disputing. Use null if you're still undecided, asking a question, or
-deferring to later (e.g. a promise to pay another time).
+Use "pay_now" only if your reply_text itself indicates you're completing payment right now. 
+Use "pause_subscription" if you have explicitly decided to pause the subscription.
+Use "cancel_or_dispute" if you're explicitly declining or disputing. 
+Use "undecided" if you're still thinking, asking a question, or deferring to later (e.g. a promise to pay another time).
