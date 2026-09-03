@@ -158,6 +158,9 @@ async def process_inbound_reply(
     elif state == "opt_out":
         new_status = "stopped"
         
+    elif state == "human_escalation":
+        new_status = "human_escalated"
+        
     elif state == "unresolved":
         new_status = old_status # no change to case status
     
