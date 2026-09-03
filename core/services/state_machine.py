@@ -32,15 +32,27 @@ from core.models.audit_events import AuditEvent
 async def draft_and_send_followup(case, customer_reply, classified_state, channel, session):
     from core.llm.client import call_llm
     
-    prompt = f"""
-    You are Razorpay's Revenue Recovery AI. 
+    from core.config import settings
+    import json
+    
+    user_context = f"""
     The case is {case.status}. The customer previously said: "{customer_reply}".
     They are in state: {classified_state}.
     Draft a short, polite follow up message to bump the customer to pay their {case.currency} {case.amount} due for {case.customer_ref}.
-    Return ONLY the raw message text.
     """
-    message = await call_llm(prompt)
     
+    response = await call_llm(
+        prompt_version="followup_draft_v2",
+        model=settings.groq_tier1_model,
+        user_messages=[{"role": "user", "content": user_context}],
+    )
+    
+    try:
+        data = json.loads(response.content)
+        message = data.get("message", response.content)
+    except Exception:
+        message = response.content
+        
     channel_response = await channel.send(to=case.customer_ref, message=message)
     
     intervention = Intervention(

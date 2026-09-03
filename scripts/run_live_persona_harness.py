@@ -193,6 +193,7 @@ async def run_harness(count: int):
             "needs_payment_help",
             "considering_cancellation",
             "ignores_completely",
+            "forgetful_promises_then_pays",
         ]
     else:
         personas_to_assign = ["considering_cancellation"] * count
