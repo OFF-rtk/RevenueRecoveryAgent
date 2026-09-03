@@ -19,6 +19,7 @@ from core.config import settings
 from core.llm.client import call_llm
 from core.models.cases import Case
 from core.models.diagnoses import Diagnosis
+from core.models.audit_events import AuditEvent
 
 log = structlog.get_logger(__name__)
 
@@ -237,6 +238,19 @@ async def diagnose_case(
         raw_llm_response=llm_result.content
     )
     session.add(diagnosis)
+    
+    audit_event = AuditEvent(
+        case_id=case.id,
+        event_type="diagnosis_completed",
+        payload={
+            "causes": canonical_causes,
+            "confidence": confidence,
+            "tier": tier,
+            "model": settings.groq_tier1_model if tier == 1 else settings.groq_tier2_model,
+            "reasoning": parsed.get("reasoning", "")
+        }
+    )
+    session.add(audit_event)
     
     # Optionally, the caller should save an AuditEvent, but for completeness, we flush
     await session.flush()

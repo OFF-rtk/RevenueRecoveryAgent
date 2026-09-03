@@ -19,6 +19,14 @@ class AuditEvent(UUIDPrimaryKeyMixin, Base):
     case_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("cases.id"), nullable=True
     )
+    correlation_id: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    def __init__(self, **kwargs):
+        if "correlation_id" not in kwargs:
+            from structlog.contextvars import get_contextvars
+            kwargs["correlation_id"] = get_contextvars().get("correlation_id")
+        super().__init__(**kwargs)
+
     event_type: Mapped[str] = mapped_column(Text, nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(
         JSONB, nullable=False, server_default=text("'{}'::jsonb")
