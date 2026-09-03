@@ -231,7 +231,6 @@ async def process_inbound_reply(
     try:
         await check_stopping_rules(case, session)
     except StoppingRuleError as exc:
-        case.status = "stopped"
         audit = AuditEvent(
             case_id=case.id,
             event_type="stopping_rule_triggered",
