@@ -107,7 +107,7 @@ async def process_inbound_reply(
     await session.flush()
     
     # 3. Dual-Trigger Outcome Precedence: If already recovered, do not act
-    if case.status in ("recovered", "stopped", "escalated", "disputed"):
+    if case.status in ("recovered", "stopped", "human_escalated", "retained_paused", "timeout"):
         log.info(
             "inbound_reply_ignored_terminal_case", 
             case_id=str(case.id), 
@@ -150,7 +150,10 @@ async def process_inbound_reply(
         new_status = "payment_method_required"
         
     elif state == "disputed":
-        new_status = "disputed"
+        new_status = "human_escalated"
+        
+    elif state == "paused":
+        new_status = "retained_paused"
         
     elif state == "opt_out":
         new_status = "stopped"
@@ -181,7 +184,7 @@ async def process_inbound_reply(
         session.add(audit_trans)
         
         # If terminal, create Outcome
-        if new_status in ("escalated", "stopped", "disputed"):
+        if new_status in ("human_escalated", "stopped", "retained_paused", "timeout"):
             outcome = Outcome(
                 case_id=case.id,
                 final_state=new_status,
@@ -190,7 +193,7 @@ async def process_inbound_reply(
             session.add(outcome)
             
     # Send the drafted message to the customer if not terminal
-    if new_status not in ("escalated", "stopped", "recovered", "disputed"):
+    if new_status not in ("human_escalated", "stopped", "recovered", "retained_paused", "timeout"):
         channel_response = await channel.send(
             to=case.customer_ref,
             message=message_to_send

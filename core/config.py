@@ -36,11 +36,16 @@ class Settings(BaseSettings):
 
     # ── Groq ────────────────────────────────────────────────────
     groq_api_key: str  # required — no default
+    groq_persona_api_key: str | None = None
     groq_base_url: str = "https://api.groq.com"
     # Tier 1: cheap, high-volume (8B-class)
     groq_tier1_model: str = "openai/gpt-oss-20b"
     # Tier 2: escalation, complex reasoning (120B-class)
     groq_tier2_model: str = "openai/gpt-oss-120b"
+
+    # ── Cerebras ────────────────────────────────────────────────
+    cerebras_key: str | None = None
+    cerebras_base_url: str = "https://api.cerebras.ai/v1"
 
     # ── App ─────────────────────────────────────────────────────
     log_level: str = "INFO"

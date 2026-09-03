@@ -97,19 +97,19 @@ async def check_max_retries(case: Case, session: AsyncSession) -> None:
 
     if count >= MAX_RETRIES:
         old_status = case.status
-        case.status = "escalated"
+        case.status = "timeout"
 
         transition = StateTransition(
             case_id=case.id,
             from_state=old_status,
-            to_state="escalated",
+            to_state="timeout",
             reason="max_retries_reached",
         )
         session.add(transition)
 
         outcome = Outcome(
             case_id=case.id,
-            final_state="escalated",
+            final_state="timeout",
             amount_recovered=0,
         )
         session.add(outcome)
@@ -120,7 +120,7 @@ async def check_max_retries(case: Case, session: AsyncSession) -> None:
         )
         raise StoppingRuleError(
             rule="max_retries",
-            message=f"Case {case.id} has reached max retries ({MAX_RETRIES}) — escalated.",
+            message=f"Case {case.id} has reached max retries ({MAX_RETRIES}) — timeout.",
         )
 
 

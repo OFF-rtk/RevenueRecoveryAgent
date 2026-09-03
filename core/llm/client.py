@@ -81,6 +81,8 @@ async def call_llm(
     prompt_version: str,
     model: str,
     user_messages: list[dict[str, Any]],
+    api_key: str | None = None,
+    base_url: str | None = None,
     **kwargs: Any,
 ) -> LLMResponse:
     """
@@ -92,6 +94,7 @@ async def call_llm(
         model:          Groq model ID (e.g. settings.groq_tier1_model).
         user_messages:  List of {"role": ..., "content": ...} dicts appended
                         after the system prompt. Typically one user message.
+        api_key:        Optional API key override. If not provided, uses the default from settings.
         **kwargs:       Passed through to the Groq client (e.g. max_tokens).
                         temperature is silently stripped — always 0.
 
@@ -114,7 +117,9 @@ async def call_llm(
         *user_messages,
     ]
 
-    client = AsyncGroq(api_key=settings.groq_api_key, base_url=settings.groq_base_url)
+    active_api_key = api_key if api_key is not None else settings.groq_api_key
+    active_base_url = base_url if base_url is not None else settings.groq_base_url
+    client = AsyncGroq(api_key=active_api_key, base_url=active_base_url)
 
     log.info(
         "llm_call_start",
