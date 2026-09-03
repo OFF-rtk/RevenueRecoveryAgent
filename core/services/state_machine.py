@@ -195,35 +195,34 @@ async def process_inbound_reply(
             )
             session.add(outcome)
             
-    # Send the drafted message to the customer if not terminal
-    if new_status not in ("human_escalated", "stopped", "recovered", "retained_paused", "timeout"):
-        channel_response = await channel.send(
-            to=case.customer_ref,
-            message=message_to_send
-        )
-        log.info("followup_sent", case_id=str(case.id), channel=channel.name)
-    
-        from core.models.interventions import Intervention
-        from core.models.audit_events import AuditEvent
-    
-        # Save Intervention record so harness can see it
-        intervention = Intervention(
-            case_id=case.id,
-            channel=channel_response.get("channel", "unknown") if isinstance(channel_response, dict) else "unknown",
-            message_sent=message_to_send,
-            attempt_number=2
-        )
-        session.add(intervention)
+    # Always send the drafted message to the customer, even if this reply transitioned the case to a terminal state.
+    # The customer needs to see the final acknowledgment (e.g. "Your subscription is paused", "I have escalated to support").
+    channel_response = await channel.send(
+        to=case.customer_ref,
+        message=message_to_send
+    )
+    log.info("followup_sent", case_id=str(case.id), channel=channel.name)
+
+    from core.models.interventions import Intervention
+
+    # Save Intervention record so harness can see it
+    intervention = Intervention(
+        case_id=case.id,
+        channel=channel_response.get("channel", "unknown") if isinstance(channel_response, dict) else "unknown",
+        message_sent=message_to_send,
+        attempt_number=2
+    )
+    session.add(intervention)
         
-        audit_event = AuditEvent(
-            case_id=case.id,
-            event_type="followup_sent",
-            payload={
-                "channel": channel.name,
-                "message": message_to_send,
-            }
-        )
-        session.add(audit_event)
+    audit_event = AuditEvent(
+        case_id=case.id,
+        event_type="followup_sent",
+        payload={
+            "channel": channel.name,
+            "message": message_to_send,
+        }
+    )
+    session.add(audit_event)
     
     await session.commit()
     

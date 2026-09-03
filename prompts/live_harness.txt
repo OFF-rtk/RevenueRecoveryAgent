@@ -21,6 +21,6 @@ Respond with ONLY a JSON object, nothing else:
 }
 
 Use "pay_now" only if your reply_text itself indicates you're completing payment right now. 
-Use "pause_subscription" if you have explicitly decided to pause the subscription.
+Use "pause_subscription" if you have explicitly decided to pause the subscription, OR if you asked to pause and the agent agrees to hold/pause it for you (in which case you should accept and pause).
 Use "cancel_or_dispute" if you're explicitly declining or disputing. 
 Use "undecided" if you're still thinking, asking a question, or deferring to later (e.g. a promise to pay another time).

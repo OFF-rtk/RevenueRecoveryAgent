@@ -78,8 +78,15 @@ async def send_razorpay_webhook(phone: str, client: httpx.AsyncClient):
     payload_bytes = json.dumps(payload_dict, separators=(",", ":")).encode("utf-8")
     signature = generate_razorpay_signature(payload_bytes, RAZORPAY_WEBHOOK_SECRET)
     headers = {"Content-Type": "application/json", "X-Razorpay-Signature": signature}
-    resp = await client.post(RAZORPAY_WEBHOOK_URL, content=payload_bytes, headers=headers)
-    return resp
+    for attempt in range(3):
+        try:
+            resp = await client.post(RAZORPAY_WEBHOOK_URL, content=payload_bytes, headers=headers)
+            return resp
+        except Exception as e:
+            if attempt == 2:
+                raise
+            print(f"⚠️ ConnectError in send_razorpay_webhook, retrying ({attempt+1}/3)...")
+            await asyncio.sleep(2)
 
 async def send_payment_captured(phone: str, client: httpx.AsyncClient):
     payload_dict = {
@@ -104,8 +111,15 @@ async def send_payment_captured(phone: str, client: httpx.AsyncClient):
     payload_bytes = json.dumps(payload_dict, separators=(",", ":")).encode("utf-8")
     signature = generate_razorpay_signature(payload_bytes, RAZORPAY_WEBHOOK_SECRET)
     headers = {"Content-Type": "application/json", "X-Razorpay-Signature": signature}
-    resp = await client.post(RAZORPAY_WEBHOOK_URL, content=payload_bytes, headers=headers)
-    return resp
+    for attempt in range(3):
+        try:
+            resp = await client.post(RAZORPAY_WEBHOOK_URL, content=payload_bytes, headers=headers)
+            return resp
+        except Exception as e:
+            if attempt == 2:
+                raise
+            print(f"⚠️ ConnectError in send_payment_captured, retrying ({attempt+1}/3)...")
+            await asyncio.sleep(2)
 
 async def send_whatsapp_webhook(phone: str, message: str, client: httpx.AsyncClient):
     payload_dict = {
@@ -132,14 +146,50 @@ async def send_whatsapp_webhook(phone: str, message: str, client: httpx.AsyncCli
     payload_bytes = json.dumps(payload_dict, separators=(",", ":")).encode("utf-8")
     signature = generate_whatsapp_signature(payload_bytes, WHATSAPP_APP_SECRET)
     headers = {"Content-Type": "application/json", "X-Hub-Signature-256": signature}
-    resp = await client.post(WHATSAPP_WEBHOOK_URL, content=payload_bytes, headers=headers)
-    return resp
+    for attempt in range(3):
+        try:
+            resp = await client.post(WHATSAPP_WEBHOOK_URL, content=payload_bytes, headers=headers)
+            return resp
+        except Exception as e:
+            if attempt == 2:
+                raise
+            print(f"⚠️ ConnectError in send_whatsapp_webhook, retrying ({attempt+1}/3)...")
+            await asyncio.sleep(2)
 
 async def get_persona_reply(persona_type: str, conversation_summary: str, latest_agent_message: str, temperature: float) -> dict:
     if persona_type == "ignores_completely":
         return {"reply_text": "", "action": "undecided", "conversation_summary": conversation_summary}
         
+    system_prompt = """You are role-playing as a customer receiving a real WhatsApp message about
+a failed payment. Read the actual message shown to you and respond exactly
+as this persona would -- in your own words, not a template.
+
+Stay fully in character. Do not mention that you are an AI, a test, or a
+simulation under any circumstance.
+
+Your tendencies below describe how you LEAN, not a script you must follow.
+Let the specific wording and content of the message you actually receive
+genuinely influence your decision in the moment -- a well-handled message
+can move you toward paying faster than your default tendency; a confusing
+or pushy one can push you the other way. Do not treat your outcome as
+predetermined by your persona alone.
+
+Respond with ONLY a JSON object, nothing else:
+{
+  "reply_text": "string -- what you actually say back, in character",
+  "action": "pay_now" | "pause_subscription" | "cancel_or_dispute" | "undecided",
+  "internal_reasoning": "string -- brief note on why you responded this way, not shown to the customer-facing system, for our own logging only",
+  "conversation_summary": "string -- summarize the ENTIRE conversation history up to and including this turn. This replaces the raw history array."
+}
+
+Use "pay_now" only if your reply_text itself indicates you're completing payment right now. 
+Use "pause_subscription" if you have explicitly decided to pause the subscription, OR if you asked to pause and the agent agrees to hold/pause it for you (in which case you should accept and pause).
+Use "cancel_or_dispute" if you're explicitly declining or disputing. 
+Use "undecided" if you're still thinking, asking a question, or deferring to later (e.g. a promise to pay another time).
+"""
+    
     messages = [
+        {"role": "system", "content": system_prompt},
         {"role": "user", "content": f"Your assigned persona is:\n{PERSONAS[persona_type]}"}
     ]
     
@@ -194,7 +244,7 @@ async def get_persona_reply(persona_type: str, conversation_summary: str, latest
                 print(f"Response: {e.response.text}")
             return {"reply_text": "", "action": "undecided", "conversation_summary": conversation_summary}
 
-async def run_harness(count: int):
+async def run_harness(count: int, persona_filter: str = None):
     print(f"🚀 Starting Live Persona Harness with {count} cases...")
     
     state_file = Path("data/live_persona_state.json")
@@ -207,7 +257,9 @@ async def run_harness(count: int):
     
     # Custom distribution logic
     personas_to_assign = []
-    if count == 28:
+    if persona_filter:
+        personas_to_assign = [persona_filter] * count
+    elif count == 28:
         personas_to_assign = (
             ["accidental_failure"] * 5 +
             ["suspicious_payer"] * 5 +
@@ -227,6 +279,8 @@ async def run_harness(count: int):
             "ignores_completely",
             "forgetful_promises_then_pays",
         ]
+    elif count == 1:
+        personas_to_assign = ["suspicious_payer"]
     else:
         personas_to_assign = ["considering_cancellation"] * count
         
@@ -299,13 +353,6 @@ async def run_harness(count: int):
                 if not case_row:
                     continue
                     
-                # Check the actual database status to see if the case has hit a terminal state
-                if case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout"):
-                    c["status"] = "resolved"
-                    c["outcome"] = case_row.status
-                    print(f"🏁 Case {c['phone']} reached terminal DB state: {case_row.status}")
-                    continue
-
                 # Get latest Intervention
                 intervention = await session.scalar(
                     select(Intervention).where(Intervention.case_id == case_row.id).order_by(desc(Intervention.sent_at)).limit(1)
@@ -313,7 +360,17 @@ async def run_harness(count: int):
                 
                 needs_followup_push = False
                 
-                if intervention and str(intervention.id) not in c["seen_interventions"]:
+                # Check if we have an unseen intervention
+                has_unseen_intervention = intervention and str(intervention.id) not in c["seen_interventions"]
+                
+                # If the DB state is terminal, AND there are no unseen messages for the persona to reply to, we are fully done.
+                if case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout") and not has_unseen_intervention:
+                    c["status"] = "resolved"
+                    c["outcome"] = case_row.status
+                    print(f"🏁 Case {c['phone']} reached terminal DB state: {case_row.status} (Conversation concluded)")
+                    continue
+
+                if has_unseen_intervention:
                     # New message from the agent!
                     c["seen_interventions"].append(str(intervention.id))
                     agent_text = intervention.message_sent
@@ -437,5 +494,6 @@ async def run_harness(count: int):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--count", type=int, default=3, help="Number of synthetic cases to run")
+    parser.add_argument("--persona", type=str, default=None, help="Specific persona to test")
     args = parser.parse_args()
-    asyncio.run(run_harness(args.count))
+    asyncio.run(run_harness(args.count, args.persona))
