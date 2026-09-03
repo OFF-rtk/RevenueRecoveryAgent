@@ -87,24 +87,29 @@ async def check_followup(case_id_str: str, force: bool):
             print(f"✅ Follow-up sent and logged successfully to audit_events (via draft_and_send_followup)!")
             
         else:
-            print(f"📜 Sending fallback template outside 24h window...")
-            template_used = "payment_reminder_followup_v1"
-            parameters = [str(case.currency), str(case.amount), str(case.customer_ref)]
-            
-            channel_response = await channel.send_template(
-                to=case.customer_ref,
-                template_name=template_used,
-                parameters=parameters
-            )
-            sent_representation = f"[{template_used}] {parameters}"
-
             # Get the next attempt number
             result = await session.execute(
                 select(func.max(Intervention.attempt_number)).where(Intervention.case_id == case.id)
             )
             last_attempt = result.scalar() or 0
             next_attempt = last_attempt + 1
+            
+            print(f"📜 Sending fallback template outside 24h window...")
+            template_used = "payment_reminder_followup_v1"
+            parameters = [str(case.currency), str(case.amount), str(case.customer_ref)]
+            sent_representation = f"[{template_used}] {parameters}"
 
+            # Check stopping rules before sending
+            try:
+                from core.services.stopping_rules import check_max_retries
+                await check_max_retries(case, session)
+            except Exception as e:
+                if type(e).__name__ == "StoppingRuleError":
+                    print(f"🛑 Stopping rule triggered: {e}")
+                    await session.commit()
+                    return
+                raise
+                
             # Save Intervention record
             intervention = Intervention(
                 case_id=case.id,
@@ -113,6 +118,12 @@ async def check_followup(case_id_str: str, force: bool):
                 attempt_number=next_attempt
             )
             session.add(intervention)
+            
+            channel_response = await channel.send_template(
+                to=case.customer_ref,
+                template_name=template_used,
+                parameters=parameters
+            )
             
             # Save Audit Event
             audit_event = AuditEvent(

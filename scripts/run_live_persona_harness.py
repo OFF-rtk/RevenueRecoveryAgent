@@ -147,20 +147,52 @@ async def get_persona_reply(persona_type: str, conversation_summary: str, latest
         messages.append({"role": "user", "content": f"Conversation Summary so far: {conversation_summary}"})
         
     messages.append({"role": "user", "content": f"Latest message from Agent: {latest_agent_message}"})
+
+    headers = {
+        "Authorization": f"Bearer {settings.cerebras_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "gpt-oss-120b",
+        "messages": messages,
+        "temperature": temperature,
+        "response_format": {"type": "json_object"}
+    }
     
-    res = await call_llm(
-        prompt_version="live_harness",
-        model=settings.groq_tier1_model,
-        user_messages=messages,
-        response_format={"type": "json_object"},
-        temperature=temperature
+    from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_exception_type
+    
+    @retry(
+        wait=wait_exponential(multiplier=1, min=2, max=20),
+        stop=stop_after_attempt(7),
+        retry=retry_if_exception_type(httpx.HTTPStatusError),
+        reraise=True
     )
-    
-    try:
-        return json.loads(res.content)
-    except Exception as e:
-        print(f"Error parsing LLM response: {e}")
-        return {"reply_text": "", "action": "undecided", "conversation_summary": conversation_summary}
+    async def _do_post():
+        resp = await client.post(f"{settings.cerebras_base_url}/chat/completions", json=payload, headers=headers)
+        resp.raise_for_status()
+        return resp
+        
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        try:
+            resp = await _do_post()
+            data = resp.json()
+            content = data["choices"][0]["message"]["content"]
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                # Cerebras might not enforce json perfectly
+                print(f"Failed to parse JSON, raw content: {content[:100]}...")
+                # try to extract a block
+                import re
+                match = re.search(r"```json(.*?)```", content, re.DOTALL)
+                if match:
+                    return json.loads(match.group(1).strip())
+                raise
+        except Exception as e:
+            print(f"Error calling Cerebras API: {e}")
+            if hasattr(e, 'response') and e.response:
+                print(f"Response: {e.response.text}")
+            return {"reply_text": "", "action": "undecided", "conversation_summary": conversation_summary}
 
 async def run_harness(count: int):
     print(f"🚀 Starting Live Persona Harness with {count} cases...")
@@ -227,7 +259,7 @@ async def run_harness(count: int):
     await asyncio.sleep(15)
     
     db_url = os.getenv("DATABASE_URL", settings.database_url)
-    engine = create_async_engine(db_url)
+    engine = create_async_engine(db_url, pool_pre_ping=True, pool_recycle=300)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     
     # 2.5 Log Persona Configuration in Audit Trail
@@ -249,7 +281,7 @@ async def run_harness(count: int):
                 session.add(audit_event)
         await session.commit()
     
-    MAX_ROUNDS = 20
+    MAX_ROUNDS = 40
     
     for round_idx in range(MAX_ROUNDS):
         print(f"\n--- Round {round_idx + 1}/{MAX_ROUNDS} ---")
@@ -267,6 +299,13 @@ async def run_harness(count: int):
                 if not case_row:
                     continue
                     
+                # Check the actual database status to see if the case has hit a terminal state
+                if case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout"):
+                    c["status"] = "resolved"
+                    c["outcome"] = case_row.status
+                    print(f"🏁 Case {c['phone']} reached terminal DB state: {case_row.status}")
+                    continue
+
                 # Get latest Intervention
                 intervention = await session.scalar(
                     select(Intervention).where(Intervention.case_id == case_row.id).order_by(desc(Intervention.sent_at)).limit(1)
@@ -280,7 +319,7 @@ async def run_harness(count: int):
                     agent_text = intervention.message_sent
                     print(f"🤖 Agent -> {c['phone']}: {agent_text}")
                     
-                    max_replies = 8 if c["persona"] == "considering_cancellation" else 5
+                    max_replies = 12 if c["persona"] == "considering_cancellation" else 10
                     if c["replies_sent"] >= max_replies:
                         print(f"🛑 Max replies reached for {c['phone']}. Stalling.")
                         c["status"] = "stalled"
@@ -301,27 +340,21 @@ async def run_harness(count: int):
                     print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('internal_reasoning')} ({latency:.2f}s)")
                     reply_text = llm_resp.get("reply_text", "").strip()
                     action = llm_resp.get("action", "undecided")
-                    
+                      
                     if action == "pay_now":
                         print(f"💰 Persona {c['phone']} decided to PAY!")
-                        c["outcome"] = "recovered"
-                        c["status"] = "resolved"
+                        # Send webhook so the backend state machine flips it to recovered
                         async with httpx.AsyncClient(timeout=600.0) as client:
                             await send_payment_captured(c["phone"], client)
                         continue
                         
                     elif action == "pause_subscription":
                         print(f"⏸️ Persona {c['phone']} decided to PAUSE!")
-                        c["outcome"] = "retained_paused"
-                        c["status"] = "resolved"
-                        # Do not send webhook, just let conversation end.
-                        continue
+                        # The text they generated will be sent to the agent and the agent will classify it as 'paused'.
                         
-                    elif action == "cancel_or_dispute":
-                        print(f"❌ Persona {c['phone']} decided to CANCEL/DISPUTE!")
-                        c["outcome"] = "lost"
-                        c["status"] = "resolved"
-                        continue
+                    elif action == "cancel":
+                        print(f"❌ Persona {c['phone']} decided to CANCEL!")
+                        # Text sent to agent will be classified as 'opt_out' -> stopped.
                         
                     if reply_text:
                         c["replies_sent"] += 1
@@ -345,10 +378,18 @@ async def run_harness(count: int):
         print("⏳ Waiting 10 seconds for app to respond...")
         await asyncio.sleep(10)
         
-    for c in cases:
-        if c["status"] in ["active", "stalled"]:
-            c["outcome"] = "undecided_timeout"
-            c["status"] = "resolved"
+    # Final sweep: Check DB status for any remaining cases
+    async with async_session() as session:
+        for c in cases:
+            if c["status"] in ["active", "stalled"]:
+                case_row = await session.scalar(
+                    select(Case).where(Case.customer_ref == c["phone"]).order_by(desc(Case.created_at)).limit(1)
+                )
+                if case_row and case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout"):
+                    c["outcome"] = case_row.status
+                else:
+                    c["outcome"] = "timeout" # Default to timeout
+                c["status"] = "resolved"
 
     print("\n📊 Generating Report...")
     report = {
@@ -356,8 +397,8 @@ async def run_harness(count: int):
             "total_cases": len(cases),
             "recovered_cases": sum(1 for c in cases if c["outcome"] == "recovered"),
             "retained_paused_cases": sum(1 for c in cases if c["outcome"] == "retained_paused"),
-            "timeout_cases": sum(1 for c in cases if c["outcome"] == "undecided_timeout"),
-            "lost_cases": sum(1 for c in cases if c["outcome"] == "lost"),
+            "timeout_cases": sum(1 for c in cases if c["outcome"] == "timeout"),
+            "lost_cases": sum(1 for c in cases if c["outcome"] == "stopped"),
             "recovery_rate": f"{(sum(1 for c in cases if c['outcome'] == 'recovered') / len(cases)) * 100:.1f}%",
             "retention_rate": f"{((sum(1 for c in cases if c['outcome'] in ['recovered', 'retained_paused'])) / len(cases)) * 100:.1f}%",
         },
@@ -372,8 +413,8 @@ async def run_harness(count: int):
             continue
         p_recovered = sum(1 for c in p_cases if c["outcome"] == "recovered")
         p_retained = sum(1 for c in p_cases if c["outcome"] == "retained_paused")
-        p_timeout = sum(1 for c in p_cases if c["outcome"] == "undecided_timeout")
-        p_lost = sum(1 for c in p_cases if c["outcome"] == "lost")
+        p_timeout = sum(1 for c in p_cases if c["outcome"] == "timeout")
+        p_lost = sum(1 for c in p_cases if c["outcome"] == "stopped")
         
         report["by_persona"][p_type] = {
             "total": len(p_cases),
