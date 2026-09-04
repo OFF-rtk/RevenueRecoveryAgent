@@ -1,153 +1,133 @@
 # Revenue Recovery Agent
+
 **Razorpay AI Buildathon 2026 — AI Revenue Recovery Track**
 
-An autonomous AI agent that detects at-risk revenue, diagnoses the root cause using a tiered LLM strategy, and executes targeted recovery interventions via WhatsApp — with a full audit trail of every decision.
+---
+
+## 1. The Problem & What This Solves
+
+Merchants lose significant revenue through failed subscriptions and overdue receivables. Resolving these failures rarely happens in a single, clean step. It requires:
+1. **Detecting** the risk.
+2. **Diagnosing** the specific cause (e.g., insufficient funds vs. expired card).
+3. **Choosing** the right intervention and executing it through the right channel.
+4. **Tracking** the customer's response dynamically.
+5. **Proving** — with real numbers — how much was actually recovered.
+
+The Revenue Recovery Agent solves this by fully automating the recovery loop. It listens for failure webhooks from Razorpay, performs an AI-driven diagnosis to identify the root cause, initiates contact via WhatsApp, and handles the subsequent back-and-forth negotiation natively via LLMs until a promise-to-pay is achieved or a hard stopping rule is hit.
 
 ---
 
-## Architecture
+## 2. Architecture & Design Decisions
 
+### Architecture Diagram
+```text
+[Razorpay Test Webhooks (payment.failed / subscription.halted / invoice.expired)]
+        ↓
+[Detection Layer] — flags at-risk cases → Postgres `cases` table
+        ↓
+[Diagnosis Layer] — every case gets a real gpt-oss-20b diagnosis call
+        → high confidence: resolved on the cheap tier
+        → low confidence / conflicting signals: escalate to gpt-oss-120b for reasoned diagnosis
+        → structured output: {cause, action, confidence, tier}
+        ↓
+[Intervention Layer]
+        → FIRST CONTACT: send pre-approved WhatsApp template (bound from cause + customer data)
+        → sent via Recovery Channel abstraction → Meta WhatsApp Cloud API
+        ↓
+[Reply Interpretation] — inbound webhook → LLM classifies reply
+        → {promise_made, needs_new_payment_method, disputed, no_response}
+        ↓
+[Follow-up Drafting] — once session is open (customer has replied), LLM drafts tone-matched free-text follow-ups
+        ↓
+[Outcome Resolution] — dual trigger, whichever resolves the case first:
+        (a) Razorpay payment webhook (payment.captured / subscription reactivated)
+        (b) WhatsApp state machine reaching a terminal state
+        ↓
+[State Machine] — promise-to-pay tracking, scheduled follow-ups, stopping rules
+        ↓
+[Audit Trail] — every decision + outcome logged (Supabase-style structured events)
+        ↓
+[Batch Runner / Dashboard] — runs full batch → generates metrics report and visualizes on Next.js UI
 ```
-[Razorpay Webhooks: payment.failed / subscription.halted / invoice.expired]
-        ↓
-[Detection Layer]       — flags at-risk cases → Postgres `cases` table
-        ↓
-[Diagnosis Layer]       — tiered LLM routing
-  ├── Tier 1 (gpt-oss-20b)   → ~58-65% of cases resolved cheaply
-  └── Tier 2 (gpt-oss-120b)  → escalated on low confidence (~35-42%)
-        ↓ multi-label causes[]
-[Stopping Rules]        — hard safety gates (opt-out, dispute, max retries, no-blind-retry)
-        ↓
-[Intervention Layer]    — template-based WhatsApp first contact (no LLM)
-        ↓
-[Reply Interpretation]  — LLM classifies inbound free text
-        ↓
-[State Machine]         — deterministic transitions: promise / needs_new_method / disputed / no_response
-        ↓
-[Outcome Resolution]    — dual trigger: Razorpay payment webhook OR WhatsApp reply
-        ↓
-[Audit Trail]           — every decision + outcome in structured `audit_events`
-        ↓
-[Batch Runner + Report] — reproducible metrics across 65+ cases
-```
 
-### Key Design Choices
+### Deterministic vs. LLM Design Decisions
 
-- **Deterministic state machine, LLM-driven classification** — LLMs output labels; your code decides what happens next. No LangGraph black boxes.
-- **Multi-label diagnosis** — the model outputs a list of causes (e.g. `["dispute_raised", "cash_flow_issue"]`), enabling ambiguity-aware routing without forced single-label commitment.
-- **Stopping rules are safety-first** — if any cause in the list triggers a hard gate (e.g. `dispute_raised`), all automated contact is blocked.
-- **Temperature = 0, versioned prompts, fixed seeds** — everything is reproducible and auditable.
+We drew a hard line between what should be LLM-driven and what should be deterministic code. 
+
+**What is LLM-Driven:**
+- **Diagnosis:** Every case gets a genuine LLM diagnosis call on a fast, cheap tier (`gpt-oss-20b`). Escalation to the expensive reasoning tier (`gpt-oss-120b`) only happens for low-confidence or conflicting-signal cases.
+- **Reply Interpretation:** Inbound WhatsApp messages are messy free-text. We use the LLM to classify user intent into a finite state machine.
+- **Follow-up Drafting:** Once the user opens a session window, the LLM is given free rein to negotiate, answer questions, and draft contextual follow-ups.
+
+**What is Deterministic:**
+- **First-Contact Messages:** Initial outbound messages **cannot** be generated by an LLM due to Meta's strict business messaging policies. We use deterministic data-binding to populate pre-approved WhatsApp templates.
+- **State Machine & Stopping Rules:** The rules for halting a conversation (e.g., max retries, timeout, explicit opt-out) are strictly enforced in Python code, preventing runaway LLM loops.
+- **Database & Idempotency:** Webhook idempotency keys, transitions, and the audit trail are rigidly structured in Postgres.
 
 ---
 
-## Quick Start
+## 3. Setup Instructions
 
-### Prerequisites
-- Docker + Docker Compose
-- Python 3.12+
-- A [Groq](https://console.groq.com) API key
-
-### 1. Configure environment
+The repository is built using Python 3.12+ (FastAPI) and Next.js (React). These instructions work on a clean clone:
 
 ```bash
-cp .env.example .env
-# Fill in GROQ_API_KEY and RAZORPAY_WEBHOOK_SECRET
-```
+# 1. Clone the repository
+git clone https://github.com/OFF-rtk/RevenueRecoveryAgent.git
+cd RevenueRecoveryAgent
 
-### 2. Start Postgres
-
-```bash
-docker compose up -d db
-```
-
-### 3. Install dependencies
-
-```bash
+# 2. Set up the Python virtual environment
 python3 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
-```
+source .venv/bin/activate
 
-### 4. Apply migrations
+# 3. Install dependencies
+pip install -e ".[dev]"
 
-```bash
-.venv/bin/alembic upgrade head
-```
+# 4. Configure Environment
+cp .env.example .env
+# Open .env and add your GROQ_API_KEY, WHATSAPP_TOKEN, and other secrets
 
-### 5. Start the API
+# 5. Start the Database & Run Migrations
+docker-compose up -d db
+alembic upgrade head
 
-```bash
-.venv/bin/uvicorn core.main:app --reload
-curl http://localhost:8000/health
-# {"status":"ok","db":"connected","env":"development"}
-```
+# 6. Start the Backend API
+.venv/bin/uvicorn core.main:app --reload --port 8001
 
-### 6. Run the batch pipeline
-
-```bash
-# Mini-batch (22 cases, ~3 min)
-.venv/bin/python scripts/run_batch.py --fixtures fixtures/mini_fixtures.json --fresh \
-  | .venv/bin/python scripts/generate_report.py
-
-# Full batch (65 cases, ~12 min)
-.venv/bin/python scripts/run_batch.py --fixtures fixtures/fixtures.json --fresh \
-  | .venv/bin/python scripts/generate_report.py
-```
-
-Report written to `reports/batch_report.md`.
-
-### 7. Run tests
-
-```bash
-.venv/bin/pytest tests/ -v --tb=short -m "not integration"
+# 7. Start the Dashboard UI (in a new terminal window)
+cd dashboard
+npm install
+npm run dev
 ```
 
 ---
 
-## Project Layout
+## 4. What Broke (And How We Fixed It)
 
-```
-core/
-  llm/            ← Groq client (retry, logging, versioned prompts)
-  services/
-    diagnosis.py  ← tiered LLM routing, multi-label causes[], normalisation
-    stopping_rules.py  ← hard safety gates
-    intervention.py    ← template selection + channel dispatch
-    state_machine.py   ← deterministic reply → state transitions
-  models/         ← SQLAlchemy ORM (cases, diagnoses, interventions, replies, outcomes, audit_events)
-  routers/        ← FastAPI webhook endpoints
-  webhooks/       ← Razorpay + WhatsApp inbound handlers
-prompts/          ← versioned LLM prompts (diagnosis_v1.txt, diagnosis_v1_tier2.txt)
-fixtures/         ← synthetic fixture sets (mini_fixtures.json, fixtures.json)
-tests/            ← phase test suites (Phase 0–6)
-scripts/
-  run_batch.py    ← end-to-end batch runner
-  generate_report.py  ← metrics report generator
-  seed_synthetic.py   ← deterministic synthetic data generator
-reports/          ← generated batch_report.md / .json
-docs/
-  spec.md         ← full architecture + data model spec
-  implementation.md   ← phased build plan (Phases 0–8)
-  prod_req.md     ← production un-mocking guide
-DEMO_RUNBOOK.md   ← step-by-step pitch video demo script
-metrics.md        ← running accuracy / cost numbers per phase
-```
+Building an autonomous agent that directly texts your customers is terrifying. Here are the biggest hurdles we hit during the buildathon:
+
+- **The WhatsApp Session-Window Discovery**: We initially designed the system so the LLM would dynamically craft the very first message. We quickly learned that Meta explicitly blocks free-text business-initiated messages. We had to pivot our architecture to use parameter-bound, pre-approved WhatsApp templates for the initial outreach, reserving the LLM generation for replies only *after* the customer responds (which opens a 24-hour session window).
+- **The WABA Subscription Bug**: Early on, our webhook wasn't receiving any inbound WhatsApp replies. It turned out that simply setting up the webhook URL wasn't enough; we had to explicitly subscribe our webhook to the `messages` field in the WhatsApp Business Account (WABA) dashboard.
+- **The Suspicious 100% Accuracy Catch**: During initial synthetic testing, the dashboard reported a 100% recovery rate. This immediately raised a red flag. We realized the synthetic generator and the agent were too perfectly aligned. To fix this, we built a dedicated `run_live_persona_harness.py` simulation that decoupled the LLM generating the replies from the LLM classifying them, simulating real chaos.
+- **The Dashboard Counting Bug Hunt**: The UI dashboard initially aggregated metrics by running raw SQL counts against the `cases` table. However, because our test runs generated multiple overlapping synthetic states, the counts didn't reflect the true simulator results. We refactored the backend `/api/dashboard/summary` endpoint to directly parse the output JSON report generated by the harness, ensuring the UI accurately matched the simulator.
+- **The Prompt Engineering Nightmare (Tier 1 Confidently Wrong)**: When testing personas like `considering_cancellation` or `suspicious_payer`, the smaller `gpt-oss-20b` model would confidently misdiagnose the state or get stuck in conversational loops (e.g., repeatedly asking "Would you like to pause?" when the user already said "Yes"). We had to aggressively refine `analyze_and_respond_v1.txt` to enforce strict confirmation logic and updated our `stopping_rules.py` to allow a `action_type="follow_up"` bypass so active, legitimate negotiations wouldn't abruptly hit the `max_retries` cap.
 
 ---
 
-## LLM Cost Model
+## 5. Testing & Persona Simulation
 
-| Tier | Model | When | Price |
-|------|-------|------|-------|
-| Tier 1 | `openai/gpt-oss-20b` | Every case | $0.075/$0.30 per 1M tokens |
-| Tier 2 | `openai/gpt-oss-120b` | Low confidence escalations only | $0.15/$0.60 per 1M tokens |
+To prove the agent's resilience without spamming real customers, we built a live harness that pitted the agent against a separate LLM acting as six distinct customer personas. 
 
-A full 65-case batch uses ~120K tokens total (~$0.02).
+### The Personas
+1. **Accidental Failure**: Card expired, willing to pay immediately when reminded.
+2. **Needs Payment Help**: Wants to pay but faces technical issues with the link.
+3. **Forgetful Promises**: Commits to paying tomorrow, then forgets, requiring a follow-up.
+4. **Ignores Completely**: Never responds to the initial template.
+5. **Suspicious Payer**: Thinks the message is a scam and demands proof.
+6. **Considering Cancellation**: Unsure if they want to renew, asking about feature loss and pause options.
 
----
+### The Simulation Reality
+We prompted the harness LLM to deeply embody these personas and push back on the agent. 
+* **The Reaction**: The agent easily recovered the straightforward personas (Accidental Failure, Needs Payment Help). However, the complex personas broke the agent early on. The "Considering Cancellation" persona resulted in infinite loops, and the "Suspicious Payer" triggered the agent to hallucinate fake Razorpay credentials.
+* **The Fix**: We completely overhauled the system prompt for the drafting layer, providing explicit guardrails against promising features or inventing credentials. We also tuned the state machine transitions to recognize a "Paused" state only upon explicit confirmation from the user, preventing the agent from prematurely closing the case.
 
-## Docs
-
-- [`docs/spec.md`](docs/spec.md) — full architecture and data model
-- [`docs/implementation.md`](docs/implementation.md) — phased build plan
-- [`docs/prod_req.md`](docs/prod_req.md) — production deployment guide
-- [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md) — pitch video demo script
+The final result is a robust, battle-tested recovery pipeline that handles messy human interaction gracefully.
