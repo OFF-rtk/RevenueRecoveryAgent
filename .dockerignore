@@ -13,7 +13,8 @@ __pycache__/
 .mypy_cache/
 tests/
 fixtures/
-reports/
+reports/*
+!reports/live_persona_report.json
 metrics.md
 DEMO_RUNBOOK.md
 README.md
