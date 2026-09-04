@@ -2,24 +2,24 @@
   "summary": {
     "total_cases": 50,
     "outcomes": {
-      "recovered": 25,
+      "recovered": 22,
       "retained_paused": 12,
-      "human_escalated": 4,
+      "human_escalated": 7,
       "stopped": 0,
       "timeout": 9,
       "error": 0
     },
     "percentages": {
-      "recovered": "50.0%",
+      "recovered": "44.0%",
       "retained_paused": "24.0%",
-      "human_escalated": "8.0%",
+      "human_escalated": "14.0%",
       "stopped": "0.0%",
       "timeout": "18.0%",
       "error": "0.0%"
     },
     "kpis": {
-      "recovery_rate": "50.0%",
-      "retention_rate": "74.0%"
+      "recovery_rate": "44.0%",
+      "retention_rate": "68.0%"
     }
   },
   "by_persona": {
@@ -51,17 +51,17 @@
       "outcomes": {
         "recovered": 0,
         "retained_paused": 0,
-        "human_escalated": 4,
+        "human_escalated": 6,
         "stopped": 0,
-        "timeout": 2,
+        "timeout": 0,
         "error": 0
       },
       "percentages": {
         "recovered": "0.0%",
         "retained_paused": "0.0%",
-        "human_escalated": "66.7%",
+        "human_escalated": "100.0%",
         "stopped": "0.0%",
-        "timeout": "33.3%",
+        "timeout": "0.0%",
         "error": "0.0%"
       },
       "kpis": {
@@ -97,17 +97,17 @@
       "outcomes": {
         "recovered": 0,
         "retained_paused": 12,
-        "human_escalated": 0,
+        "human_escalated": 1,
         "stopped": 0,
-        "timeout": 1,
+        "timeout": 0,
         "error": 0
       },
       "percentages": {
         "recovered": "0.0%",
         "retained_paused": "92.3%",
-        "human_escalated": "0.0%",
+        "human_escalated": "7.7%",
         "stopped": "0.0%",
-        "timeout": "7.7%",
+        "timeout": "0.0%",
         "error": "0.0%"
       },
       "kpis": {
@@ -141,687 +141,1150 @@
     "forgetful_promises_then_pays": {
       "total": 7,
       "outcomes": {
-        "recovered": 7,
+        "recovered": 4,
         "retained_paused": 0,
         "human_escalated": 0,
         "stopped": 0,
-        "timeout": 0,
+        "timeout": 3,
         "error": 0
       },
       "percentages": {
-        "recovered": "100.0%",
+        "recovered": "57.1%",
         "retained_paused": "0.0%",
         "human_escalated": "0.0%",
         "stopped": "0.0%",
-        "timeout": "0.0%",
+        "timeout": "42.9%",
         "error": "0.0%"
       },
       "kpis": {
-        "recovery_rate": "100.0%",
-        "retention_rate": "100.0%"
+        "recovery_rate": "57.1%",
+        "retention_rate": "57.1%"
       }
     }
   },
   "cases_data": [
     {
-      "phone": "919000000471",
+      "phone": "919000001546",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "30a8fe1e-1e67-42b8-b09c-6c2028d9cdcc",
+        "992f40ab-a755-4a4d-9bee-3c66270d21f2"
+      ],
+      "conversation_summary": "Agent notified user that the INR 999.00 transaction was declined. User asked for a UPI link or instructions to update payment method, preferring UPI over re\u2011entering card details. Agent provided a UPI payment link (https://rzp.io/i/98b54934). User now acknowledges receipt and plans to complete the payment using the provided link.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
+    },
+    {
+      "phone": "919000001547",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 4,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "51f59ac9-5558-444d-b9a0-5dc8a62471ed",
+        "b9f73f49-bf68-457c-9f9e-03c2b0c21a92",
+        "53dc65b3-8c07-487f-bfc7-ea6f977c06f8",
+        "3513ab66-eef0-48de-8500-608544eefb95"
+      ],
+      "conversation_summary": "Agent notified that the payment of INR 999.00 failed due to insufficient funds and warned that cancelling would result in loss of all premium features, including advanced analytics, priority support, and exclusive content, asking if the user wants to keep the subscription or needs help updating payment. Agent then offered to pause the Razorpay Premium Annual Subscription for one month and asked if the user would like to proceed. User was told the subscription was paused for a month and given a payment link to resume anytime. User now asks for clarification on what would be lost if they cancel and inquires about any discounts or flexible plans.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001548",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 6,
+      "temperature": 0.86,
+      "seen_interventions": [
+        "c213168b-570c-4029-8281-24980942ad47",
+        "f29e6efd-5622-422c-90bb-f4ca58a1ad3d",
+        "b2991bee-f25b-4abb-849b-e2b9ae74dacb",
+        "0aced294-5d1f-4d59-8da7-15cc35b615c0",
+        "61905a29-f28d-4084-a367-832f4382be95",
+        "0a0b1bdf-3ecb-48b4-b0a0-2aee9fc25f18",
+        "f78b3e62-c569-46e1-9a52-9e35923f63d0"
+      ],
+      "conversation_summary": "Agent informed the customer that the INR 1499.00 payment failed and the auto\u2011pay mandate was revoked (invoice 919000001548). The customer requested a UPI link or an easy way to update the payment method. Agent provided a UPI payment link (https://rzp.io/i/3ade2d61) and asked the customer to update and inform when done. Customer thanked the agent and said they would update the payment method right away using the UPI option. Agent reiterated thanks and reminded the customer to let them know once the payment is completed, sending the same payment link again. Latest agent message: \"Thanks! You can pay here: https://rzp.io/i/3ade2d61. Let us know once it\u2019s completed.\"",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001549",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "46f82d53-c095-4a6d-a16e-901be466f85d",
+        "50bf0ae9-4b73-4df2-a7f6-b6ec6b7081fe",
+        "94ad4569-89d0-4602-8052-a6d7d49d5423"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice about a declined INR 999.00 transaction (reference 919000001549). User asked for clarification about the product/service and sign\u2011up date. Agent replied that the charge is for a Razorpay Premium Annual Subscription, could not provide the signup date, and offered a payment link. User requested specifics about what the subscription includes and asked for confirmation of the email linked to the account. Agent responded that the subscription gives full access to all premium features for a year, cannot view the email on file, and forwarded the request to support.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
+    },
+    {
+      "phone": "919000001550",
       "persona": "accidental_failure",
       "status": "resolved",
       "outcome": "recovered",
       "replies_sent": 0,
       "temperature": 0.81,
       "seen_interventions": [
-        "a19c7b56-99cf-479e-bc73-49f898c0b4c5"
+        "fee70734-a33e-4bf7-a7d6-9ec95b635a1b"
       ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 for transaction ID 919000000471 due to insufficient funds. Customer responded thanking the agent, acknowledging the issue, and requesting the link or steps to update payment details and complete the payment."
+      "conversation_summary": "Agent informed me that the payment of INR 499 (transaction ID 919000001550) failed because my card has expired. I acknowledged the issue, said I\u2019ll update my card details, and will pay the amount right away.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
     },
     {
-      "phone": "919000000472",
+      "phone": "919000001551",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.8,
+      "seen_interventions": [
+        "d240efd9-1ed2-4ba1-ba34-0efc6998297d",
+        "4e3224e6-ab44-4c90-a3f8-58c728b8410f",
+        "55c1e178-c2ff-45bb-a4c1-cf6162bcc296"
+      ],
+      "conversation_summary": "",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001552",
       "persona": "accidental_failure",
       "status": "resolved",
       "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.73,
+      "replies_sent": 1,
+      "temperature": 0.84,
       "seen_interventions": [
-        "e7319a05-99c7-4430-aa95-9aa2c6d10fd4"
+        "92b1ed77-8a5c-400a-8601-e44f0ad50589",
+        "4d7186ef-4957-49bc-b3af-88200300a81f"
       ],
-      "conversation_summary": "Agent notified that the INR 999.00 payment failed due to insufficient funds on card ending 919000000472. User acknowledges the issue and plans to resolve it promptly."
+      "conversation_summary": "Agent notified that the INR 1499 auto\u2011pay was revoked, causing a payment failure. Customer asked for guidance on updating payment details and expressed intent to pay promptly. Agent provided a link to update payment info.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
     },
     {
-      "phone": "919000000473",
-      "persona": "needs_payment_help",
+      "phone": "919000001553",
+      "persona": "accidental_failure",
       "status": "resolved",
       "outcome": "recovered",
       "replies_sent": 1,
-      "temperature": 0.89,
+      "temperature": 0.7,
       "seen_interventions": [
-        "040eda51-0603-4ae1-a585-871c0ba9f437",
-        "6c41072a-9257-48dd-9c74-3ee0084fdb7d"
+        "fafeefb5-bfef-42ff-a65e-7767f3ca394a",
+        "978cbd6e-6209-40af-a851-121eb5233904"
       ],
-      "conversation_summary": "Agent notified that the payment of INR 999.00 failed because the card had insufficient funds. I asked for a straightforward way to update the payment method, preferring UPI over re-entering card details. Agent responded with a direct link to update payment method to UPI: https://rzp.io/i/d7724336. I thanked them and said I will use the link to switch to UPI and complete the payment."
+      "conversation_summary": "Agent sent a payment recovery notice for INR 499.00 (transaction ID 919000001553) due to an expired card. Customer thanked the agent, noted the card expiration, and asked for a link to update payment details. Agent provided a link (https://rzp.io/i/2928cf9b) to update card details and asked to be notified once done to reactivate the Razorpay Pro Monthly Plan. Customer now confirms they have updated the card and requests reactivation.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
     },
     {
-      "phone": "919000000474",
+      "phone": "919000001554",
       "persona": "forgetful_promises_then_pays",
       "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.9,
+      "outcome": "timeout",
+      "replies_sent": 10,
+      "temperature": 0.71,
       "seen_interventions": [
-        "d38f5290-191b-457d-8696-6dbf9f83639d",
-        "775fa6b1-614b-4dff-adb5-ca62ee630edb"
+        "72db5458-85ec-4870-89e8-2fda5f9e63c9",
+        "bea4a318-c201-49c0-9658-315a0f1961ad",
+        "16d25a11-fa0a-4d2f-86a1-93e715845be1",
+        "b15036a4-22c3-43e6-9b0c-e45a676b1115",
+        "0a7cd32a-eb11-4f7b-a719-16dcf90dd427",
+        "ea092ff5-22c4-4875-ad00-ff56c91aceb9",
+        "c44a37d1-9cc5-4b29-bb49-bade291041ab",
+        "af474954-606b-4989-9399-3c4525c54b78",
+        "e768c067-4d67-4839-8fb6-7c6effd9f003",
+        "b1308439-330a-4431-aaae-ac210f597b6d",
+        "ea123a50-98c6-4e7d-9024-2adb0897c6ef"
       ],
-      "conversation_summary": "Agent notified about insufficient funds for INR\u202f999. Customer acknowledged and promised to handle payment tonight. Agent provided payment link and offered assistance for any issues."
+      "conversation_summary": "Agent informed me that the INR 2999.00 payment for invoice 919000001554 failed due to incorrect details and sent a payment link. I acknowledged and promised to pay tonight. Agent followed up, reminding me to use the same link. I reiterated my promise to pay tonight. Agent sent another reminder, confirming they will watch for my payment tonight and shared the payment link again. I responded with another promise to handle the payment tonight. Agent thanked me and said they'd look out for my payment tonight, providing the payment link again. Latest agent message: \"Thanks! We'll look out for your payment tonight. You can pay here: https://rzp.io/i/71cb26a9\". My reply: \"Got it, thanks! I'll take care of it tonight after I finish up some work.\"",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
     },
     {
-      "phone": "919000000475",
-      "persona": "forgetful_promises_then_pays",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.86,
-      "seen_interventions": [
-        "ab138ae0-677c-4948-b980-9171a5e5c05e",
-        "e915fc42-c189-43b3-b74a-056fb0e0ed0c"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice for INR 999 (ref 919000000475) due to insufficient funds. I replied that I would sort it out tonight. Agent thanked me, noted I\u2019d handle it tonight, and provided a payment link. I am now confirming payment."
-    },
-    {
-      "phone": "919000000476",
+      "phone": "919000001555",
       "persona": "forgetful_promises_then_pays",
       "status": "resolved",
       "outcome": "recovered",
       "replies_sent": 1,
       "temperature": 0.84,
       "seen_interventions": [
-        "01957c4b-4707-4398-9721-a63c256e4454",
-        "2b623d4b-4427-48cd-ad70-00b2f03fb6fd"
+        "e6cc1906-987d-463d-bdf5-b9e77ca83641",
+        "cb225170-ea8d-4187-b8c4-a0e19ec9daf2"
       ],
-      "conversation_summary": "Agent sent a payment recovery notice for INR 999.00 (ref 919000000476) indicating insufficient funds. I replied that I would handle the payment tonight. Agent followed up, confirming readiness and providing the payment link."
+      "conversation_summary": "Agent sent a payment recovery notice for INR 999.00 (invoice 919000001555) due to insufficient funds. Customer replied promising to pay tonight. Agent followed up, acknowledging the plan and providing the payment link, asking to be informed of any issues.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
     },
     {
-      "phone": "919000000477",
-      "persona": "needs_payment_help",
+      "phone": "919000001556",
+      "persona": "ignores_completely",
       "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.82,
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.79,
       "seen_interventions": [
-        "76df4f88-0622-4c93-9920-aaffed78ccd8",
-        "c0c2c948-8dcd-407f-804b-9a9c2a54b75a"
+        "d99eac19-3fb1-4ecb-aa5e-6bdff202d7f3",
+        "061e52e8-6f35-4c0e-ae71-c35da7424389",
+        "dca00ea8-e01f-424d-ae99-75fff055410f"
       ],
-      "conversation_summary": "Agent notified that the payment of INR 999.00 failed due to insufficient funds on the card. Customer asked for a way to update payment details, preferring UPI. Agent provided a link (https://rzp.io/i/dccc8943) to update the payment method and instructed to select UPI during checkout."
+      "conversation_summary": "",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
     },
     {
-      "phone": "919000000478",
+      "phone": "919000001557",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.79,
+      "seen_interventions": [
+        "c4562aa4-4564-4912-9f8d-e827ff11d55a",
+        "268d0858-b117-4a1e-b539-e8605e8487cd",
+        "e35ed2c4-11f1-470e-85f6-926dd1a6bbce"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a declined transaction of INR\u202f999.00 (transaction ID 919000001557). The user asked for details about the product/service and subscription date. Agent replied that it is for the Razorpay Premium Annual Subscription and suggested checking email or account for the sign\u2011up date. User requested the exact start date and a copy of the confirmation or invoice. Agent responded that they don\u2019t have access to the signup date or original invoice, but have forwarded the request to support and will get back shortly. User now asks for an estimated response time and reiterates need for invoice before confirming payment.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
+    },
+    {
+      "phone": "919000001558",
       "persona": "accidental_failure",
       "status": "resolved",
       "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.75,
-      "seen_interventions": [
-        "53b069be-40b7-4a67-8e10-c42c8457b93b"
-      ],
-      "conversation_summary": "Agent sent payment recovery notice: INR 999.00, transaction ID 919000000478, reason: insufficient funds. Customer responded expressing thanks, intent to update card and pay immediately."
-    },
-    {
-      "phone": "919000000479",
-      "persona": "ignores_completely",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 0,
-      "temperature": 0.8,
-      "seen_interventions": [
-        "2767c443-f639-4fc3-b1fb-24950667d8e9",
-        "35b68b70-f77d-458b-9143-b6ca5f730bd7",
-        "6977c6dc-5f5a-4a42-a911-6e8ddbbb4dd9"
-      ],
-      "conversation_summary": ""
-    },
-    {
-      "phone": "919000000480",
-      "persona": "forgetful_promises_then_pays",
-      "status": "resolved",
-      "outcome": "recovered",
       "replies_sent": 1,
-      "temperature": 0.87,
-      "seen_interventions": [
-        "b6d2cf97-41d1-41a8-8376-942b1d5b7d74",
-        "e47d9620-47d9-43cd-b360-4405c39720b9"
-      ],
-      "conversation_summary": "Agent informed me that INR\u202f999.00 could not be charged due to insufficient funds on my card. I replied that I would handle the payment tonight. Agent sent a follow\u2011up with a payment link (https://rzp.io/i/6cc50d27) and asked if I needed any help. I responded that I\u2019m opening the link now and will complete the payment."
-    },
-    {
-      "phone": "919000000481",
-      "persona": "needs_payment_help",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.85,
-      "seen_interventions": [
-        "38a9c082-9432-41fd-ba65-3b6374b35ac4",
-        "432fc596-63bd-41a8-9528-108fe203ea4b"
-      ],
-      "conversation_summary": "Agent notified me of a failed INR 999 charge (transaction ID 919000000481) due to insufficient funds. I acknowledged the failure and asked for a secure link to update payment details or an option to pay via UPI. Agent responded with a link: https://rzp.io/i/6a000093, offering to update payment details or pay via UPI."
-    },
-    {
-      "phone": "919000000482",
-      "persona": "suspicious_payer",
-      "status": "resolved",
-      "outcome": "human_escalated",
-      "replies_sent": 3,
-      "temperature": 0.88,
-      "seen_interventions": [
-        "200dace1-8b14-4ab7-94e2-e80f186f4610",
-        "20f463a7-176d-4a02-afae-1b34025b3f7d",
-        "9e5c602d-56b0-465e-b57b-203ed29842a7"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice for a failed 999 INR charge (reference 919000000482) due to insufficient funds. User asked for clarification about what the charge is for and when it was initiated. Agent replied that the charge is for the Razorpay Premium Annual Subscription and provided a payment link. User requested the subscription start date, details of the plan, and an invoice to verify the charge. Agent responded that they don\u2019t have access to the subscription start date or receipt and have forwarded the request to support, promising a follow\u2011up."
-    },
-    {
-      "phone": "919000000483",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 3,
-      "temperature": 0.8,
-      "seen_interventions": [
-        "477f60bf-10f0-4d31-9292-33ba857974cd",
-        "48c45c90-fece-4d90-a8de-ab7b127e5c66",
-        "0982ce0b-4b56-4a3e-a264-c75f7f84586a"
-      ],
-      "conversation_summary": "Agent notified that the payment failed due to insufficient funds. User asked what would be lost if they cancel, expressing uncertainty about continuing the subscription. Agent explained that cancelling would lose premium features like advanced analytics, priority support, and exclusive content, and provided a payment link. Agent then offered to pause the subscription for a month and asked for confirmation."
-    },
-    {
-      "phone": "919000000484",
-      "persona": "suspicious_payer",
-      "status": "resolved",
-      "outcome": "human_escalated",
-      "replies_sent": 3,
-      "temperature": 0.78,
-      "seen_interventions": [
-        "515e1dd3-7d42-46c4-b085-305fbd5512fd",
-        "44aed2ed-5a3d-4ad4-80e7-503e5059975c",
-        "49ad0d26-cab9-48b5-8c84-393cc90a8f84"
-      ],
-      "conversation_summary": "Agent notified the customer of a \u20b9999 charge (transaction ID 919000000484) for a Razorpay Premium Annual Subscription and provided a payment link. The customer asked for clarification on which product or service the charge pertains to and when they originally signed up. Agent replied that the charge is for the Razorpay Premium Annual Subscription, did not have the signup date, and shared a payment link. The customer requested further details and verification before deciding. Agent then responded that they don\u2019t have access to the signup date or invoice, but have forwarded the request to support and will be contacted shortly."
-    },
-    {
-      "phone": "919000000485",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 3,
-      "temperature": 0.85,
-      "seen_interventions": [
-        "d7257ba7-a925-4886-89f1-6943a61e77cc",
-        "efd7cdb8-0acb-4139-a8ee-a76d189f40ea",
-        "0c7f7399-30ec-4b58-a7c4-53547c5b7abf"
-      ],
-      "conversation_summary": "Agent notified of failed payment of INR 999.00 due to insufficient funds. User asked what would be lost if they cancel and indicated they are still deciding. Agent explained that cancelling would lose premium features, priority support, and exclusive content, and offered to pause the subscription for a month. Agent then confirmed the subscription was paused for a month and will reactivate automatically."
-    },
-    {
-      "phone": "919000000486",
-      "persona": "needs_payment_help",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.85,
-      "seen_interventions": [
-        "3b4f1426-7d9b-4213-94ec-00073856fde6",
-        "85f0121f-c633-4ea9-8d3c-894305d5ab50"
-      ],
-      "conversation_summary": "Agent notified that the payment of INR 999.00 failed because the card had insufficient funds. I requested a way to update my payment method, preferably via UPI. Agent responded with a link (https://rzp.io/i/a4d6cc26) and instructed to choose UPI to complete the payment. I confirmed I will use the link to pay via UPI."
-    },
-    {
-      "phone": "919000000487",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 2,
-      "temperature": 0.77,
-      "seen_interventions": [
-        "9f1258c3-4eb3-4b0d-bd23-3552642b5c8a",
-        "ffc847a9-3ba3-458d-9575-3823b2730f91"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 due to insufficient funds. Customer asked what they'd lose if they cancel and if they can pause the service while deciding. Agent replied that they'd still have access to all premium features, analytics, and priority support, and offered to pause for a month. Customer now requests to pause the subscription for a month."
-    },
-    {
-      "phone": "919000000488",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 2,
-      "temperature": 0.7,
-      "seen_interventions": [
-        "b1eca1df-8124-4ee9-b6bb-56939b081a18",
-        "e135e197-8c66-44b7-97da-c115f136cf86"
-      ],
-      "conversation_summary": "Agent notified about a failed payment of INR 999.00 due to insufficient funds. User asked what would happen if they cancel and requested a possible pause to consider the decision. Agent explained that cancelling would lose access to all premium features and support, and offered a one-month pause. User now requests to pause the subscription for a month."
-    },
-    {
-      "phone": "919000000489",
-      "persona": "forgetful_promises_then_pays",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.82,
-      "seen_interventions": [
-        "b04d3560-efe2-4bb3-8dda-bcddebba21d6",
-        "85980188-0b17-48f4-9b4d-3282901f7d32"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice about a failed INR 999.00 charge due to insufficient funds on card ending 919000000489. I replied that I\u2019d handle the payment tonight. Agent followed up with a thank\u2011you and provided a payment link for me to complete the transaction."
-    },
-    {
-      "phone": "919000000490",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 3,
-      "temperature": 0.8,
-      "seen_interventions": [
-        "4017c604-bd57-4479-9260-e6f490cb4d9c",
-        "32793535-1199-4fe4-bd76-0d29443398da",
-        "6aaecd73-3882-4f92-9ef7-5dbe61ded499"
-      ],
-      "conversation_summary": "Agent notified the user that a payment of INR 999.00 failed due to insufficient funds. The user asked what would be lost if they cancel and requested more time before fixing the payment. Agent explained that canceling would remove access to premium analytics, priority support, and exclusive content, and offered to pause the subscription for a month. Agent then confirmed the subscription has been paused for a month and asked the user to inform when ready to resume."
-    },
-    {
-      "phone": "919000000491",
-      "persona": "forgetful_promises_then_pays",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.86,
-      "seen_interventions": [
-        "b0643e45-a3e1-4c86-bd6a-e952859b2af4",
-        "8edfeb90-e3b8-46f4-adad-baba3f494409"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice for INR 999.00 (reference 919000000491) due to insufficient funds. Customer replied promising to handle the payment tonight. Agent followed up with a payment link (https://rzp.io/i/6e542374) and asked if help was needed. Customer now confirms they will pay immediately using the provided link."
-    },
-    {
-      "phone": "919000000492",
-      "persona": "ignores_completely",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 0,
-      "temperature": 0.74,
-      "seen_interventions": [
-        "71d6f759-9ea1-4b01-b13e-f8a7c0956a96",
-        "08c2ca33-105d-4a38-9bcb-13eb7eba00fb",
-        "b7cae075-661e-4169-ab0c-7911b23c090e"
-      ],
-      "conversation_summary": ""
-    },
-    {
-      "phone": "919000000493",
-      "persona": "needs_payment_help",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.85,
-      "seen_interventions": [
-        "b3d5460b-a3fd-4428-be4f-bc7ad9968ffa",
-        "e6d9d2ca-f19d-469c-987f-dbf5c7dc753f"
-      ],
-      "conversation_summary": "Agent notified that the payment of INR 999.00 (invoice 919000000493) failed due to insufficient funds on the card. Customer asked for a way to update the payment method, preferring UPI. Agent responded with a UPI update link: https://rzp.io/i/b7536ce8. Customer thanks the agent and will update the payment method via UPI."
-    },
-    {
-      "phone": "919000000494",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 2,
-      "temperature": 0.75,
-      "seen_interventions": [
-        "efa80c93-494e-4dc3-92d9-f8dd97855cb0",
-        "73cf79d3-e8de-4e24-ba49-c278e3251348"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating that a payment of INR 999.00 failed due to insufficient funds on the card. Agent then explained that cancelling means losing access to all premium features like advanced analytics, priority support, and exclusive content, and offered to pause the subscription for up to a month if requested."
-    },
-    {
-      "phone": "919000000495",
-      "persona": "ignores_completely",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 0,
       "temperature": 0.83,
       "seen_interventions": [
-        "8ef59024-c176-4a13-9224-489b093a36ac",
-        "8048bbe7-decc-48e5-a74b-efc0fd5656cd",
-        "56fd92d1-e838-4974-8748-8968b9e0c5d7"
+        "06831468-c3e7-4d35-971f-44be7d1fc607",
+        "c1b8e856-a29b-4d1a-bcd3-ab2b956d2454"
       ],
-      "conversation_summary": ""
+      "conversation_summary": "Agent notified of a failed INR 499.00 payment due to an expired card (transaction ID 919000001558). Customer thanked the agent, confirmed the card expiration, and requested a link to update payment details. Agent provided the update link: https://rzp.io/i/b49295c8. Customer now confirms they have updated the card using the link and asks for confirmation that the payment succeeded.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
     },
     {
-      "phone": "919000000496",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 3,
-      "temperature": 0.72,
-      "seen_interventions": [
-        "4eeb624d-1b0c-4bdc-a6e1-f334f3837051",
-        "9f3a1ea8-facb-481e-a395-540c4011e8ca",
-        "79c006a6-bae5-454d-bb58-93f9437bd17f"
-      ],
-      "conversation_summary": "Agent notified of payment failure for INR 999.00. Customer asked what would be lost if they cancel. Agent explained loss of premium features: advanced analytics, priority support, exclusive content. Customer requested more details on exclusive content and asked about pausing the subscription. Agent described exclusive content (weekly deep\u2011dive articles, monthly webinars, quarterly industry reports) and offered to pause the subscription for one month."
-    },
-    {
-      "phone": "919000000497",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 2,
-      "temperature": 0.89,
-      "seen_interventions": [
-        "3962abc3-8cf4-491c-b807-07df67bc42e4",
-        "1cf065d1-a1aa-4630-ac11-9c42187dd138"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 due to insufficient funds. Customer asked what would be lost if they cancel and whether they can pause the subscription. Agent replied that canceling would lose access to all premium features and priority support, and offered a 1\u2011month pause option. Customer now requests to pause for a month."
-    },
-    {
-      "phone": "919000000498",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 2,
-      "temperature": 0.89,
-      "seen_interventions": [
-        "e1c7fc6f-6d69-45d1-a63a-fbd0c47b019f",
-        "1193d3bb-473f-4562-8207-7dd03ed6f93b"
-      ],
-      "conversation_summary": "Agent notified that the INR 999 payment failed due to insufficient funds. I asked what would happen if I canceled and requested to pause the subscription until I could resolve the issue. Agent replied they can pause the Razorpay Premium Annual Subscription for 1 month, noting loss of premium features during the pause and providing a link to resume payment. I responded agreeing to the one\u2011month pause."
-    },
-    {
-      "phone": "919000000499",
-      "persona": "suspicious_payer",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 3,
-      "temperature": 0.72,
-      "seen_interventions": [
-        "ed116e2d-194a-4fdd-9bf6-908ed7514f11",
-        "b00aec7f-2f1c-404f-9baf-51f03b0a5473",
-        "df02d36f-659b-4cf5-93a4-09aadaebe7fb"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a 999\u202fINR charge (reference 919000000499) due to insufficient funds, without specifying the product or subscription. Agent then replied that the charge is for the Razorpay Premium Annual Subscription but did not provide the signup date, suggesting I check my email or account for that info. Agent described the Razorpay Premium Annual Subscription benefits and offered a payment link, still without giving the signup date. I am asking for the exact signup date and the email address associated with the subscription before deciding to pay."
-    },
-    {
-      "phone": "919000000500",
-      "persona": "suspicious_payer",
-      "status": "resolved",
-      "outcome": "human_escalated",
-      "replies_sent": 2,
-      "temperature": 0.77,
-      "seen_interventions": [
-        "a51389f0-62ce-4774-a3dd-0f29e916a967",
-        "c4a2be80-6885-4749-b551-f214b2e5d283"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 due to insufficient funds on card 919000000500. The customer asked for clarification about the product/service and subscription date before deciding how to proceed. Agent replied that the subscription is for Razorpay Premium Annual Subscription, apologized for not having the signup date, and said the request was forwarded to the support team for follow\u2011up."
-    },
-    {
-      "phone": "919000000501",
-      "persona": "suspicious_payer",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 3,
-      "temperature": 0.89,
-      "seen_interventions": [
-        "f24f70b4-d6f9-4ad3-80fc-cbabab200318",
-        "db2625a5-3112-4415-87a7-3d8933a4b43a",
-        "acd90835-c4ca-4efe-b48d-843195fa07f4"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice for INR\u202f999.00 due to insufficient funds on card 919000000501. I asked for clarification about the product/service and the sign\u2011up date. Agent replied that it is for the Razorpay Premium Annual Subscription, but does not have the signup date on hand, and offered a payment link. I requested the signup date or an invoice to verify the charge."
-    },
-    {
-      "phone": "919000000502",
-      "persona": "needs_payment_help",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.74,
-      "seen_interventions": [
-        "5ef6861a-9f9d-4a32-838b-06fe19db9666",
-        "0e452723-2e33-4cc2-a96c-e01529b3517d"
-      ],
-      "conversation_summary": "Agent notified me that my payment of INR 999.00 failed due to insufficient funds on the card on file. I expressed willingness to pay but needed a way to update my payment method, preferring UPI over re\u2011entering card details. Agent responded with a UPI payment link (https://rzp.io/i/8084f8fe) and asked if I needed anything else. I thanked them and said I\u2019d use the link to complete the payment immediately."
-    },
-    {
-      "phone": "919000000503",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 3,
-      "temperature": 0.85,
-      "seen_interventions": [
-        "e1db7993-2887-4e0f-8757-5f8017bd1206",
-        "0461ede3-8dda-413a-b9d4-f51522a2a81a",
-        "68475b0c-e11f-4a2c-a384-c075d008d1d6"
-      ],
-      "conversation_summary": "Agent notified the user that a payment of INR 999.00 failed due to insufficient funds, warned that canceling would lose access to all premium features (advanced analytics, priority support, exclusive content), and offered the option to pause for one month. The agent then confirmed that the subscription has been paused for a month and asked the user to let them know when ready to resume."
-    },
-    {
-      "phone": "919000000504",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 3,
-      "temperature": 0.82,
-      "seen_interventions": [
-        "88c11306-7a3a-49ba-ab93-0d48296ba4a3",
-        "f8ae9e5c-2924-46c9-a290-afca0d08d9c8",
-        "bec77a99-fcbf-43bc-a755-ef2e3db50626"
-      ],
-      "conversation_summary": "Agent notified user of a failed INR 999.00 charge due to insufficient funds. User asked what benefits would be lost if they cancel. Agent explained that cancelling removes access to premium analytics, priority support, and exclusive content, and offered a one\u2011month pause option. User requested a one\u2011month pause and asked for confirmation about data retention and reactivation. Agent confirmed the pause, assured data and settings remain safe, and said the user can reactivate anytime. User now confirms the pause request and acknowledges the data retention assurance."
-    },
-    {
-      "phone": "919000000505",
-      "persona": "ignores_completely",
-      "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 0,
-      "temperature": 0.76,
-      "seen_interventions": [
-        "684dd8a3-8799-4a8f-b2b8-b0ea9bcd811e",
-        "036363ff-321a-4147-9c4a-b2cdcdffeb8a",
-        "ad13a1e5-2bc5-425d-94f3-23697d6e7ba8"
-      ],
-      "conversation_summary": ""
-    },
-    {
-      "phone": "919000000506",
-      "persona": "needs_payment_help",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.85,
-      "seen_interventions": [
-        "13335c94-bbc8-4f72-9d91-939819e18bc1",
-        "b79b82d7-1829-4bdd-87d2-3a5bda4a04fa"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice stating the card had insufficient funds for the INR 999.00 charge. The customer acknowledged the issue and asked for a way to update the payment method, requesting a UPI option. Agent replied with a link to update payment and indicated that UPI can be selected during checkout, offering further help."
-    },
-    {
-      "phone": "919000000507",
-      "persona": "accidental_failure",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.75,
-      "seen_interventions": [
-        "9f512204-2407-484b-bb21-a575c53428ee"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed INR 999.00 transaction (ID 919000000507) due to insufficient funds. Customer acknowledged the issue, updated the card details, and requested the payment be retried."
-    },
-    {
-      "phone": "919000000508",
-      "persona": "accidental_failure",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.76,
-      "seen_interventions": [
-        "d613bd34-9bab-45e8-80d4-21d1d40ac1b9"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed INR\u202f999.00 charge due to insufficient funds on card ending 508. Customer acknowledges the issue and asks for a payment link to settle the amount promptly."
-    },
-    {
-      "phone": "919000000509",
-      "persona": "accidental_failure",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.76,
-      "seen_interventions": [
-        "1d6418dc-5d24-4b31-988e-0243840eeb05"
-      ],
-      "conversation_summary": "Agent notified that payment of INR 999.00 failed due to insufficient funds on card ending 919000000509. Customer acknowledges the issue and plans to update the card and retry the payment."
-    },
-    {
-      "phone": "919000000510",
-      "persona": "accidental_failure",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.76,
-      "seen_interventions": [
-        "43e9c360-c738-406a-b5b2-181a22015047"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed INR 999.00 charge (transaction ID 919000000510) due to insufficient funds. Customer acknowledges the issue and commits to updating card details promptly to complete the payment."
-    },
-    {
-      "phone": "919000000511",
-      "persona": "accidental_failure",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 0,
-      "temperature": 0.75,
-      "seen_interventions": [
-        "c061657a-167e-4a66-9aed-4a894559c4e8"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 (transaction ID 919000000511) due to insufficient funds. Customer thanked the agent, said they will update their card details and retry the payment."
-    },
-    {
-      "phone": "919000000512",
-      "persona": "considering_cancellation",
-      "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 3,
-      "temperature": 0.75,
-      "seen_interventions": [
-        "e28bc03d-b8d4-48f1-8c54-826ddffde50e",
-        "fffc2692-f945-440c-88fa-6d2a1fdb74d3",
-        "f6ecb6f1-69fc-4b57-b6e6-7df02ca38bc3"
-      ],
-      "conversation_summary": "Agent notified of a failed INR 999.00 payment, user asked about cancellation impact and requested more time, agent highlighted premium features and offered a one\u2011month pause, user requested the pause, agent confirmed the subscription is paused for a month and provided a payment link for later."
-    },
-    {
-      "phone": "919000000513",
-      "persona": "needs_payment_help",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.74,
-      "seen_interventions": [
-        "1fba826f-cc2a-40cb-ae4b-ab510a9b08c5",
-        "95e4901d-d9d8-4673-903b-96eab34158a8"
-      ],
-      "conversation_summary": "Agent notified that the payment of \u20b9999.00 failed due to insufficient funds on the card ending in 513. I asked for a simple way to update the payment method, preferring UPI. Agent responded with a UPI link (https://rzp.io/i/d70ac128) for updating payment. I thanked the agent and confirmed I completed the payment via the provided UPI link."
-    },
-    {
-      "phone": "919000000514",
-      "persona": "forgetful_promises_then_pays",
-      "status": "resolved",
-      "outcome": "recovered",
-      "replies_sent": 1,
-      "temperature": 0.76,
-      "seen_interventions": [
-        "32353298-7cef-4399-b868-f3dfe5eb0b73",
-        "ba23c2e0-b573-417e-a94f-5f3d3550a1f5"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice stating the INR 999.00 charge failed due to insufficient funds on card 919000000514. Customer replied that they will handle the payment tonight. Agent thanked the update, said they'd wait for the payment tonight, and provided the payment link. Customer now confirms they will pay using the link."
-    },
-    {
-      "phone": "919000000515",
-      "persona": "suspicious_payer",
-      "status": "resolved",
-      "outcome": "human_escalated",
-      "replies_sent": 3,
-      "temperature": 0.82,
-      "seen_interventions": [
-        "dfc713ff-2e68-4ea8-a973-49b35545bd9f",
-        "94ba8130-44c9-47e6-b275-cd922371f0db",
-        "9c41b8cd-b0fd-427e-b592-5ec09520a549"
-      ],
-      "conversation_summary": "Agent sent a payment recovery notice about a 999\u202fINR charge that failed due to insufficient funds (reference 919000000515). I asked for details about the product/service and the sign\u2011up date. Agent replied that the charge is for a Razorpay Premium Annual Subscription, they don\u2019t have the signup date, and provided a payment link. Agent then said they have no access to my signup date or original invoice, forwarded my request to support, and gave the same payment link again."
-    },
-    {
-      "phone": "919000000516",
+      "phone": "919000001559",
       "persona": "needs_payment_help",
       "status": "resolved",
       "outcome": "recovered",
       "replies_sent": 1,
       "temperature": 0.79,
       "seen_interventions": [
-        "d17580ba-ac7d-4e66-8938-bdc9225f23e3",
-        "f4096cc3-eb38-4b46-9587-485bd60d889b"
+        "76fd902a-c7ee-4931-b6a0-4a223565c7ac",
+        "1d4b42af-90f9-4b13-b6c4-f65cdff02518"
       ],
-      "conversation_summary": "Agent notified the customer of a failed payment due to insufficient funds for INR 999.00 on the card ending in 516. Customer acknowledged the issue and asked for an alternative payment option (UPI) or instructions to update payment details. Agent responded with a UPI payment link (https://rzp.io/i/407ddaab) and offered further assistance. Customer now thanks the agent and indicates they will use the link to pay."
+      "conversation_summary": "Agent sent a payment recovery notice stating the auto\u2011pay mandate was revoked for INR 1499.00 due to a payment failure. User responded requesting a UPI link or instructions to update the payment method, indicating willingness to pay but needing an alternative to the failed card. Agent provided a UPI payment link: https://rzp.io/i/09e9845f. User replied thanking the agent, confirming they have opened the link and will pay immediately.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
     },
     {
-      "phone": "919000000517",
-      "persona": "ignores_completely",
+      "phone": "919000001560",
+      "persona": "needs_payment_help",
       "status": "resolved",
-      "outcome": "timeout",
-      "replies_sent": 0,
+      "outcome": "recovered",
+      "replies_sent": 3,
       "temperature": 0.76,
       "seen_interventions": [
-        "119fb790-1de1-44c1-b650-0aa5e1f2b9a4",
-        "948d53a3-8308-4ce8-a8f1-168b38be0dd0",
-        "2f13183b-8886-492a-adc3-afcc97ac357e"
+        "d67a0d40-9d5c-4c46-ad7a-5e3afb9ec855",
+        "a0fea536-1a6c-4cff-95a7-e12f01611bc5",
+        "6b4b5382-9fe6-48a2-9614-cd4bfd0b948f",
+        "160c5d51-3897-4df7-ae23-d261ea5af62a"
       ],
-      "conversation_summary": ""
+      "conversation_summary": "Agent notified that a 999 INR charge was declined. User requested a UPI payment link or instructions to update payment method, preferring UPI over re\u2011entering card details. Agent responded with a UPI link (https://rzp.io/i/a0375d51) and offered further help, reiterating the link and asking to be informed once payment is completed. User now acknowledges the link and intends to pay immediately via UPI.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
     },
     {
-      "phone": "919000000518",
+      "phone": "919000001561",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.84,
+      "seen_interventions": [
+        "d957d22d-c7be-4ca3-aa57-0bbc88445809",
+        "046a4fd0-6687-4d28-95e3-6af0f7d718bd",
+        "e42d59f2-fee5-4597-ba27-8771ef31223d"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for a failed INR 2999 payment (invoice 919000001561) due to incorrect payment details. User asked for clarification about the product/service and sign\u2011up date. Agent replied that the charge is for the Razorpay Business Suite Subscription, but did not have the exact signup date, suggesting the user check their email or account and providing a payment link. User requested the exact subscription date and email confirmation before proceeding. Agent responded they do not have access to that information and have forwarded the request to support.",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001562",
       "persona": "considering_cancellation",
       "status": "resolved",
-      "outcome": "retained_paused",
-      "replies_sent": 2,
-      "temperature": 0.7,
+      "outcome": "human_escalated",
+      "replies_sent": 4,
+      "temperature": 0.76,
       "seen_interventions": [
-        "ca72efa8-982a-4d2f-8bfe-5d65325a6b56",
-        "6ed947d7-65ae-46a5-8577-db0320224dbe"
+        "df11096f-a5ee-4e55-8b9e-f077ab289992",
+        "fb6a8ec4-be82-4738-8fc3-a753c56b1863",
+        "4a3e1a33-cdd9-44ef-8f3d-303082638d9c",
+        "c0e79951-5087-4347-9170-04fc49ce338a"
       ],
-      "conversation_summary": "Agent notified the user that the INR 999.00 payment failed due to insufficient funds. The user expressed uncertainty about continuing the service and asked what would be lost on cancellation and if a pause was possible. Agent replied that cancelling would remove access to all premium features but offered a one\u2011month pause option, instructing the user to log in and choose pause."
+      "conversation_summary": "Agent notified me that a payment of INR 499.00 failed due to a technical error. I asked what would be lost if I cancel. Agent replied that canceling would lose access to premium features, priority support, future updates, and that reports would be removed after 30 days. The agent also offered to downgrade me to a cheaper plan if I specify which one. I asked for clarification on data loss and possible downgrade options. Agent responded that reports are kept for 30 days then deleted permanently, and that they will forward my question about cheaper plans and their features to the support team for a follow\u2011up.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
     },
     {
-      "phone": "919000000519",
+      "phone": "919000001563",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "0fc1f62f-b4ae-4949-97c1-8d2dd95836cf",
+        "b939be40-9f3c-4265-9923-1b649df42ecb"
+      ],
+      "conversation_summary": "Agent notified me of a payment failure for INR\u202f2999 (transaction ID 919000001563). I acknowledged the issue and asked for a link to update payment details. Agent sent a link (https://rzp.io/i/94c94d5d) to update the card. I responded that I clicked the link, updated my card, and the payment is now completed.",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001564",
       "persona": "needs_payment_help",
       "status": "resolved",
       "outcome": "recovered",
       "replies_sent": 1,
-      "temperature": 0.7,
+      "temperature": 0.83,
       "seen_interventions": [
-        "3d5427ce-fe85-4580-ae07-f30b9f0fae4e",
-        "efbbb4fc-0c72-4555-9ecd-99b5a3e88080"
+        "1d6bc50d-88c4-4a2f-9976-b1d89f368fd2",
+        "10ea0251-8d8e-480a-97c6-458106454ca1"
       ],
-      "conversation_summary": "Agent informed me that the INR 999.00 payment for invoice 919000000519 failed due to insufficient funds on the card. I asked for a simple way to update payment info, preferably via UPI. Agent responded with a link (https://rzp.io/i/f631defe) to update the payment method, including UPI, and offered further help. I confirmed I will use the link to update and pay now."
+      "conversation_summary": "Agent notified that the auto\u2011pay mandate was revoked for INR\u202f1499.00 (transaction ID 919000001564). User acknowledged the notice, mentioned the card issue, and requested a UPI payment link or a way to update payment details. Agent provided a UPI payment link (https://rzp.io/i/61a2d44f) and mentioned the option to update the payment method in the app. User responded with gratitude and intent to pay using the provided link.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
     },
     {
-      "phone": "919000000520",
+      "phone": "919000001565",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "d13b3df2-f1c5-45ac-9488-25909fcacb84",
+        "0da52079-1f4a-4aab-848a-3bd275ba21cf",
+        "6b51e82b-5072-4e8c-b2c5-6b94b417d64b"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice about a failed INR 999 charge (transaction ID 919000001565) due to insufficient funds. User asked what would be lost if they cancel and if a pause option is available. Agent explained that cancelling would lose access to premium features and support, and offered a pause of up to 1 month with no charges but also no access, providing a payment link. User expressed desire to pause for a month to reassess. Agent confirmed the subscription is paused for a month and will reactivate automatically after 30 days.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001566",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.72,
+      "seen_interventions": [
+        "0a185686-c146-4748-9173-8c498dc32467",
+        "58ec9f6b-287b-46fd-9096-b32d8abc8728"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice about a technical error processing INR 499 (reference 919000001566). Customer asked for a link to update card details. Agent provided the link https://rzp.io/i/a70df4ea. Customer confirmed updating the card and completing the payment.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001567",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.78,
+      "seen_interventions": [
+        "58bf4cb4-5ccf-4ea4-9e72-92205e8fc977",
+        "c2bd8524-2359-4278-846e-69bb5a6caa98"
+      ],
+      "conversation_summary": "Agent notified the customer of a failed payment of INR 499.00 for transaction ID 919000001567 due to an expired card. The customer asked for a link or instructions to update payment details. Agent responded with a link (https://rzp.io/i/1cb9ce49) to update card details and offered further help. Customer acknowledges the link, updates the card, and confirms the payment will be processed.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
+    },
+    {
+      "phone": "919000001568",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.86,
+      "seen_interventions": [
+        "3562f628-e83b-4b21-9a69-a6f406164e89",
+        "c79f2040-0550-42ea-81b1-70e3416c32f7",
+        "1b65cd02-0114-4bec-b8fb-daf00a08f367"
+      ],
+      "conversation_summary": "",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001569",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.75,
+      "seen_interventions": [
+        "8ea11f75-e48e-404a-a40e-1d47c450ebc6",
+        "2d16ae33-37cc-46bb-b641-841113b99ccb",
+        "fa3d0d2a-d2af-4c9d-a11b-4482c58f52bd"
+      ],
+      "conversation_summary": "",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001570",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.84,
+      "seen_interventions": [
+        "8b5cd7b7-257c-4943-9088-3a6ad4cfcd5f",
+        "1194e313-4ce5-4ab4-bda6-2b19b2a440e8",
+        "32b2ede8-cb27-45b2-b1f3-c0e557cc5e3d"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice about a failed payment of INR 499.00 (transaction ID 919000001570) due to a technical error. User asked about the implications of canceling and requested additional time to consider. Agent explained that canceling would lose access to premium features like advanced analytics, priority support, and Pro tools, and offered to pause the subscription for a month if the user wants more time. Agent then confirmed the subscription is paused for a month as requested and will reactivate automatically after the pause.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001571",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "bf68dbec-cec7-4e4d-9032-21e28e283dbe",
+        "3b9ba142-2836-4dee-8498-2114ffd19f4a"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 499.00 (reference 919000001571) citing a technical error during processing. Customer requested a UPI link or instructions to update the payment method, preferring UPI over re-entering card details. Agent responded with a UPI payment link: https://rzp.io/i/f1931815 and asked if anything else is needed.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001572",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.88,
+      "seen_interventions": [
+        "dbc55f6f-c1a5-415a-9911-195fcc289cdd"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a technical error with the INR 499.00 payment for invoice 919000001572. I responded confirming I will handle the payment immediately.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001573",
       "persona": "ignores_completely",
       "status": "resolved",
       "outcome": "timeout",
       "replies_sent": 0,
       "temperature": 0.71,
       "seen_interventions": [
-        "18bed03a-b05e-479a-b5d1-27134b0126ad",
-        "bd1fadf8-1138-4324-b422-1f86c3cc5560",
-        "bff8eb50-4902-46a0-919e-28b9d072b82c"
+        "345ced73-a6c9-47da-a3a6-9c680a7662c3",
+        "4f58e6a0-af69-4044-b6e5-707f575ebe10",
+        "d339a8e1-46c2-4573-bf30-59b6a64fc3c3"
       ],
-      "conversation_summary": ""
+      "conversation_summary": "",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001574",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 4,
+      "temperature": 0.83,
+      "seen_interventions": [
+        "44aad45e-17bd-4aba-9986-2e6723aa95a2",
+        "f226d043-0982-4347-899b-9994221407a6",
+        "f597c712-1405-415f-b3da-9958843d4e4f",
+        "e7ed33fd-8afb-4efa-8e64-7346bb2ca8f4"
+      ],
+      "conversation_summary": "Agent notified the user that a payment of INR 2999.00 failed due to incorrect payment details (reference 919000001574). The user asked what benefits would be lost if they cancel. Agent responded that cancelling will remove access to Business Suite features, like advanced analytics, priority support, and integrations, and asked if the user wants to keep it active or needs more info. Agent then offered to pause the subscription for a month and provided a payment link, asking the user to confirm if they'd like to proceed. User responded asking to pause for a month and will pay later. Agent confirmed the subscription is paused for a month and shared a payment link for future payment. User now thanks the agent and acknowledges the pause, planning to pay next month.",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001575",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.72,
+      "seen_interventions": [
+        "d0a61d3f-4c0c-4611-a249-3c3b6a372b4b",
+        "4ddcced4-4dc4-4b2a-a37f-b3216f4796c6"
+      ],
+      "conversation_summary": "Agent notified me of a failed INR\u202f499 payment (invoice 919000001575) due to a technical error. I replied that I would take care of the payment tonight. Agent responded that they will hold my subscription until payment is received and provided the payment link (https://rzp.io/i/7d4f1e71). I now intend to pay immediately.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001576",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "74ade6b7-a912-4c3c-b089-6f5398dd4014",
+        "e84b6364-af04-46ce-b35e-c62c5be40fb7",
+        "5f615f88-9ae3-49de-9d68-466fb0c10a1a"
+      ],
+      "conversation_summary": "Agent informed the user that a payment of INR 499.00 failed due to a technical error (reference 919000001576). User asked what would be lost if cancelling and inquired about pausing the subscription while deciding. Agent explained that canceling would lose real\u2011time analytics, priority support, advanced fraud protection, and stored data, and offered to pause the subscription for up to one month if the user notifies them. User requested a pause. Agent confirmed the subscription was paused for a month and will resume and bill automatically afterward. User now thanks the agent but remains undecided, asking if they can extend the pause or discuss other options.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001577",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 4,
+      "temperature": 0.73,
+      "seen_interventions": [
+        "fad3a6bc-2fc1-4b0b-b77a-c99b50a3fb04",
+        "07628194-2889-4a40-a227-9c15535095a0",
+        "7ec3ca77-980b-4fda-bc9d-dd6c03f42b6a",
+        "e558deea-e9f9-42c8-96ce-35ce352ee339"
+      ],
+      "conversation_summary": "Agent notified me of a failed INR 2999.00 payment due to incorrect payment details. I asked what I would lose if I cancel. Agent explained that canceling would mean losing access to the full Razorpay Business Suite features, including real\u2011time analytics, priority support, and API integrations, and offered help updating payment details. Agent then offered to pause my subscription for a month, asking if I\u2019d like to activate the pause. Agent confirmed the subscription has been paused for a month and can be reactivated anytime.",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001578",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "7ad13c3b-ea90-4e6a-bdb0-7068b725e58a",
+        "0f91b808-6b16-49e8-85e5-0f87003719ba",
+        "e277a21b-35c5-4c54-b542-7650fad31f07"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed transaction for INR\u202f999.00 (reference 919000001578) due to the bank declining the payment. User asked for details about the product/service and sign\u2011up date. Agent responded: This charge is for your Razorpay Premium Annual Subscription; I don't have the signup date on hand. If you'd like to settle the payment, you can do so here: https://rzp.io/i/32a881e9. User then asked for the original signup date and clarification on what the subscription includes. Agent replied: Sorry, I don\u2019t have access to your signup date or full coverage details. I\u2019ve forwarded your request to our support team and they\u2019ll contact you soon.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
+    },
+    {
+      "phone": "919000001579",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 7,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "9d8d9ac0-178b-40c2-bcc1-f3ee59e92c11",
+        "d9bebb4d-9e00-48aa-9881-4bbe2b2560e7",
+        "7a0eca92-ff1f-45a9-9612-f52eadf4dcf3",
+        "1f77ff11-58e2-4ae7-a2f9-c9f1bdd0a667",
+        "91525e53-9250-4010-8735-c06e2ef2b56d",
+        "e8b45cfd-5b16-4069-bf68-fb4b8fbdcc0c",
+        "5f029877-b16d-407b-a2d8-bd64abea8bcb"
+      ],
+      "conversation_summary": "The agent notified the user of a failed INR 2999.00 payment (reference 919000001579) and warned that canceling would lose access to advanced analytics, priority support, and API access. The agent offered a one\u2011month pause, assuring data and settings would be retained, with no extra fees for later cancellation. The user asked for clarification on data retention during the pause and potential cancellation fees. The agent confirmed that a one\u2011month pause keeps all data and settings intact and that canceling later incurs no extra fees, then asked if the user would like to pause now or proceed with payment. The user requested a reminder of what would be lost if they cancel now and confirmation that pausing has no hidden charges. The agent reiterated that canceling now stops access to Razorpay Business Suite benefits (unlimited invoices, auto\u2011reconciliation, priority support, advanced analytics) and that pausing is free with no hidden fees, inviting the user to decide. The user then asked to pause the subscription for a month. The agent confirmed the pause, stating it will reactivate automatically after 30 days and provided a payment link. The user now acknowledges the pause and asks for confirmation that there are no hidden fees for reactivation.",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001580",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.79,
+      "seen_interventions": [
+        "88621f3c-c756-488c-8c3b-4607edfad247",
+        "c925bc4b-7ff4-4731-8c00-828821c7119b"
+      ],
+      "conversation_summary": "Agent informed the customer that the auto\u2011pay mandate was revoked and the payment of INR\u202f1499.00 (transaction ID 919000001580) could not be processed. Customer asked for the link or steps to update card details. Agent responded with a link to update the card: https://rzp.io/i/f0723f57. Customer replied confirming they have updated the card via the link and expect the payment to be processed.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001581",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 2,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "7d7f1aa0-0679-48e8-a9ba-c5a9c52499fe",
+        "9a03758b-7790-40c5-bffa-4aa45648492b",
+        "b25934a4-7da3-4e3f-b9b8-6af76b54697a"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR\u202f999.00, citing insufficient funds on the card. Customer asked for a UPI link or a way to update payment details, preferring UPI. Agent responded with a UPI payment link (https://rzp.io/i/7045a217) and asked if anything else was needed. Agent then reiterated the link, saying they\u2019ll watch for the payment.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001582",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "9b401e0c-a4b8-4113-ba18-9c63fa9fd3a9",
+        "ee9be6d3-b111-43c2-b74f-92e85947139f",
+        "4428eced-0ecd-456c-b218-d5fa35740cdc"
+      ],
+      "conversation_summary": "Agent notified user of a failed auto\u2011pay of INR 1499.00 (invoice 919000001582) and revoked the auto\u2011pay mandate. User asked what would be lost if they cancel and requested a few more days to decide. Agent explained that cancelling would lose access to Team Plan features like unlimited projects, advanced analytics, and priority support, and offered to pause the subscription for up to a month. User requested a pause for a month. Agent confirmed the plan is paused for a month with no charges during this period and can be reactivated anytime. User now thanks the agent and acknowledges the pause.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001583",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 5,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "16b6b232-a7a7-4835-bda1-49ba693b605c",
+        "ae51acd2-8fab-47db-817c-8fc561c348a4",
+        "628a9b99-7652-4b6c-8c06-f9dd0068623a",
+        "7b077a14-2756-4655-b4ee-d706b032569f",
+        "35dddfa1-d606-46c9-a18f-f492c4a5e31a"
+      ],
+      "conversation_summary": "Agent notified the user of a failed payment of INR 999.00 due to insufficient funds. User asked what would be lost if they cancel. Agent replied that cancelling would lose access to premium features like advanced analytics, priority support, and exclusive content. User then asked about pausing the subscription or moving to a lower\u2011cost plan. Agent offered to pause for a month or switch to a lower\u2011cost monthly plan, asking the user to choose. Agent reiterated that the monthly plan is \u20b9999 per month and includes core Razorpay Premium features, and offered to pause the subscription for one month if that helps. Agent then confirmed they have paused the subscription for one month and will notify the user of any lower\u2011price plans. User thanked the agent, said they'll think over the month, and asked to be informed of any new lower\u2011price plans.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001584",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 10,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "59b62bc9-edb1-40b5-9ee0-e602f1a2db7f",
+        "e74c4ad0-aa76-48ab-95b9-74ccffaaaf9f",
+        "f3b548fb-0cdd-4403-a684-9ea690fff5ff",
+        "958374b2-3f9c-4481-b11d-141d222c7f11",
+        "b5ec94b4-7b05-46d2-b9ad-a8b5b03be079",
+        "b7c7fe4e-8733-4234-a4c4-6af0665ab321",
+        "91b5ed4f-de98-441c-a33f-a20be2e63eae",
+        "59b62309-d726-4508-89e7-8b23960da8f1",
+        "b9c60a41-b3e5-4331-ad7e-f2ffc7b6faa2",
+        "ce9c5d55-8e9a-4318-af20-5cf2d30d81cd",
+        "e8bdf590-dbd6-4484-a01c-813631306f3e"
+      ],
+      "conversation_summary": "Agent notified that the INR\u202f499 payment failed due to an expired card and provided a payment link. User promised to update the card and pay tonight. Agent sent a reminder to pay tonight using the same link. User reaffirmed they would handle it this evening after completing some tasks. Agent thanked them and reminded again with the payment link, asking to be notified once done. User replied that they'd take care of it shortly after finishing a few things. Agent sent a follow\u2011up thank\u2011you and the payment link again. Latest agent message: 'Thanks! We'll wait for your payment tonight. You can use the same link when you're ready: https://rzp.io/i/b5d17713'.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
+    },
+    {
+      "phone": "919000001585",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.84,
+      "seen_interventions": [
+        "16d6f484-24e2-4c88-9a78-b3b3e27a1a61",
+        "e4d4d91b-a315-4fdc-bd55-c8516c8e2415",
+        "fe957755-e444-40c4-bc0e-fd401dc95b14"
+      ],
+      "conversation_summary": "Agent notified of a failed 499 INR payment (transaction ID 919000001585) and asked for payment. User asked about implications of cancelling and whether they could pause. Agent explained that canceling would lose premium features and data would be archived after 30 days, and offered a 1\u2011month pause that keeps the account active but stops billing. User sought clarification before confirming the pause. Agent responded: \"Sure, we\u2019ll pause your subscription for a month \u2013 your data stays safe, the price stays the same, and there\u2019s no fee. I\u2019ll take care of it now.\"",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "SERVER_ERROR",
+        "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment."
+      }
+    },
+    {
+      "phone": "919000001586",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.86,
+      "seen_interventions": [
+        "7f919124-7607-466f-ad03-4041aa2a786c",
+        "90eedd12-00f4-4d43-b928-5353428051b9",
+        "677d2c4e-a68c-4a04-a84f-46c3b9b977ba"
+      ],
+      "conversation_summary": "",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
+    },
+    {
+      "phone": "919000001587",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.87,
+      "seen_interventions": [
+        "791e3949-c54a-4b99-9d9d-30763efcb044",
+        "441fab17-d744-4d01-9378-add59d7ae981",
+        "00a80cf5-b2c3-4625-851f-d1405337cb35"
+      ],
+      "conversation_summary": "Agent informed the customer that the INR 1499 auto\u2011pay failed due to a revoked mandate and explained that canceling would lose unlimited projects, advanced analytics, and priority support. The agent offered to reschedule the payment or pause the subscription for one month. The customer asked to pause for a month to reconsider and inquired about resuming benefits after the pause. Agent confirmed the subscription was paused for one month and that the benefits would remain the same upon resumption.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001588",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.88,
+      "seen_interventions": [
+        "a4f8bea9-e227-4120-9f8c-34d7d0296931",
+        "5f6b5454-3a25-4be6-a285-b1f1c9331618",
+        "012fa901-a8cf-4396-b00d-ea7eabbbd384"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 1499.00 (reference 919000001588) stating the auto\u2011pay mandate was revoked. I asked for clarification about the product/service and original signup date. Agent replied that the charge is for the Razorpay Team Plan Subscription, does not have the signup date, and asked if I wanted to settle the payment or discuss options. Agent then said they don\u2019t have access to my signup date or linked email, and have forwarded my request to support, who will contact me soon.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001589",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.87,
+      "seen_interventions": [
+        "067f4615-5135-4b2c-a0bb-5d53266e0c81",
+        "ea3cb3ae-800c-43b2-81fc-b9bcbc37c11a"
+      ],
+      "conversation_summary": "Agent notified user of a failed payment due to insufficient funds for INR 999. User asked for a UPI payment link or instructions to update payment method, preferring an easier option over re-entering card details. Agent responded offering to update payment method in the app or use a UPI link: https://rzp.io/i/40e6893a, and asked if user needs help.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001590",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "4834170b-2e77-41ce-aada-b1b9cd0d68d3",
+        "121e82be-4478-41bc-bb63-6cef1fdcc4f3"
+      ],
+      "conversation_summary": "Agent notified that the auto\u2011pay mandate for INR 1499.00 (transaction ID 919000001590) was revoked. Customer asked for a UPI payment link or instructions to update the payment method, preferring UPI over re\u2011entering card details. Agent responded with a UPI payment link (https://rzp.io/i/f0e4135e) and directions to update payment method in the app. Customer now acknowledges receipt and intends to pay using the provided link.",
+      "scenario": {
+        "description": "Razorpay Team Plan Subscription",
+        "amount": 149900,
+        "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer."
+      }
+    },
+    {
+      "phone": "919000001591",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 8,
+      "temperature": 0.81,
+      "seen_interventions": [
+        "bbcaf015-7c0d-4631-b5c1-f0fd6bd0caab",
+        "2dd3c810-2720-4044-b329-e8a3179fc7be",
+        "f1a812ec-1259-4063-ad34-dc386e89b519",
+        "7cf496ad-86f5-44c8-99ad-cad4406dee8a",
+        "cedf01f8-4675-469a-b9ba-d9902adc1d01",
+        "2976bfd5-6dfa-4db4-a4af-4fa39ab405e1",
+        "760c62e5-28d4-4cc6-9df5-776ac7bdd729",
+        "f0e9b4cd-2a18-4298-b443-72bcc5757f68"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 2999, warning that canceling would lose access to Razorpay Business Suite benefits and provided a re\u2011activation link. Agent offered to pause the subscription for one month, explaining that pausing stops billing and premium features are unavailable until reactivation. User asked for clarification on what would be missed during a pause and whether any premium features could be retained. Agent clarified that pausing results in loss of all premium tools (advanced analytics, priority support, custom invoicing) with no features retained. User sought confirmation and asked if any basic features could be kept while deciding. Agent replied that only a full pause is offered, which removes premium tools, and no lighter tier exists, asking if the user would like to pause for a month or have another preference. Agent then confirmed that they have paused the subscription for a month. User now asks for more time to decide and inquires about the ability to cancel later without penalty.",
+      "scenario": {
+        "description": "Razorpay Business Suite Subscription",
+        "amount": 299900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file."
+      }
+    },
+    {
+      "phone": "919000001592",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "85708f1e-6a43-44fd-a036-270f335fa196",
+        "0aef3b9b-3d5c-4c6b-bdba-b75ea7b7423f",
+        "9c7ba9bc-4552-43b6-a76b-7d9b33c6807f"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 499.00 (reference 919000001592) stating the card is expired. User asked for clarification about the product/service and sign\u2011up details, and how to update payment method. Agent replied that the charge is for the Razorpay Pro Monthly Plan, couldn't provide the exact sign\u2011up date, suggested checking email or account, and provided a link to update payment method. Agent then added that the Pro Monthly Plan includes unlimited payments, advanced analytics, and priority support, and that they have forwarded the request to support. User now asks for the original receipt, the email/account linked to the subscription, and the approximate sign\u2011up date before proceeding.",
+      "scenario": {
+        "description": "Razorpay Pro Monthly Plan",
+        "amount": 49900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "card_expired",
+        "error_description": "The card has expired."
+      }
+    },
+    {
+      "phone": "919000001593",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 10,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "7dbc7016-987b-4708-b509-316ad0e84441",
+        "368bf968-0d98-47b6-a701-c2d86bf66570",
+        "aee64819-f6fa-4721-a269-02146d84ca11",
+        "6f5690b2-50a6-4b0f-aa86-aaf91a0dc62c",
+        "b02d8f3a-67b0-4e6b-81d5-79bbe2ed92be",
+        "a1292bf3-d641-4ed5-97a7-2b42018a569c",
+        "eb5e06f9-3c6f-4d1c-8143-89e108111052",
+        "61a92754-6bc0-4163-8c44-a5a1393ad41f",
+        "55c8430d-8878-46aa-8a88-c7e08aa2928a",
+        "2427904d-51e6-464a-8058-23fbcdd8942b",
+        "f3a4f813-b51b-46f7-8327-c362ab1d013f"
+      ],
+      "conversation_summary": "Agent notified that a payment of INR\u202f999 was declined due to insufficient funds on the card ending\u202f593 and provided a payment link. User acknowledged the issue and promised to resolve the payment tonight. Agent thanked the user, said they'd watch for the payment tonight, and re-shared the payment link. User confirmed receipt of the link and reiterated intent to pay tonight after work. Agent sent another thank you and payment link. User responded confirming receipt and promising to pay tonight after work. Agent sent a final thank you and payment link. User now acknowledges receipt and promises to pay tonight after work.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account."
+      }
+    },
+    {
+      "phone": "919000001594",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "ced3914f-b6ae-4261-bbf9-b17aae3371a4",
+        "433ec9c2-83f3-4be7-9849-1d1c6b11c9b1"
+      ],
+      "conversation_summary": "Agent notified that the INR 999.00 payment for order 919000001594 was declined by the bank. I acknowledged the failure, explained that my card is likely the issue, and asked for a UPI link or a way to update my payment details so I can resolve the payment. Agent responded with a UPI payment link (https://rzp.io/i/a0d99e31) and offered to walk me through updating card details if needed. I thanked them and said I\u2019ll use the UPI link now to settle the payment.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
+    },
+    {
+      "phone": "919000001595",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.9,
+      "seen_interventions": [
+        "35be0395-1ec5-4f69-a91e-00e6a2d79019",
+        "5c57d7eb-7b8d-46a2-a738-07017c335063"
+      ],
+      "conversation_summary": "Agent notified that the INR 999.00 payment (Invoice 919000001595) was declined and sent a recovery notice. Customer apologized for the delay and promised to attempt payment again tonight, indicating they would update the agent. Agent thanked the customer, reiterated they will wait for the payment tonight, provided the payment link again, and asked to be informed once the payment is completed.",
+      "scenario": {
+        "description": "Razorpay Premium Annual Subscription",
+        "amount": 99900,
+        "method": "card",
+        "error_code": "GATEWAY_ERROR",
+        "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank."
+      }
     }
   ],
   "note": "This report was generated using live deployed infrastructure (real HTTP webhooks against Render) with LLM-simulated persona behavior bypassing the Meta API."

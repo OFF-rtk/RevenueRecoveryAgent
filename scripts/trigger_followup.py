@@ -23,7 +23,7 @@ from core.config import settings
 from core.services.state_machine import draft_and_send_followup
 
 
-async def check_followup(case_id_str: str, force: bool):
+async def check_followup(case_id_str: str, force: bool, use_mock: bool = False):
     try:
         case_id = uuid.UUID(case_id_str)
     except ValueError:
@@ -32,6 +32,13 @@ async def check_followup(case_id_str: str, force: bool):
 
     db_url = os.getenv("DATABASE_URL", settings.database_url)
     engine = create_async_engine(db_url)
+    try:
+        await _check_followup_impl(engine, case_id, case_id_str, force, use_mock)
+    finally:
+        await engine.dispose()
+
+
+async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, force: bool, use_mock: bool = False):
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
     async with async_session() as session:
@@ -39,6 +46,8 @@ async def check_followup(case_id_str: str, force: bool):
         if not case:
             print(f"❌ Case {case_id_str} not found.")
             return
+
+        use_mock = use_mock or settings.use_mock_channel
 
         print(f"🔍 Checking follow-up for Case {case_id}")
         print(f"Current Status: {case.status}")
@@ -63,7 +72,7 @@ async def check_followup(case_id_str: str, force: bool):
                 is_session_open = True
                 
         # Determine channel
-        if settings.use_mock_channel:
+        if use_mock:
             channel = MockChannel()
             print("🔧 Using MockChannel for testing.")
         else:

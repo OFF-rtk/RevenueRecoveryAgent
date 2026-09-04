@@ -16,6 +16,9 @@ from pathlib import Path
 # Ensure the project root is on the path when run directly
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Line-buffer stdout so progress is visible in real time even when redirected to a file/log
+sys.stdout.reconfigure(line_buffering=True)
+
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
@@ -37,11 +40,50 @@ WHATSAPP_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "test_whatsapp_secret")
 PERSONAS = {
     "accidental_failure": "PERSONA: You're a genuinely happy customer of this service. Your payment failure was just an accident -- maybe your card details changed, maybe you weren't paying attention. You have no complaints about the product and no reason to be difficult.\n\nTENDENCY: You generally lean toward paying quickly once you understand what happened and see a clear way to fix it. But you're a real person -- if the message is confusing, you might ask a clarifying question first. If it's clear and easy, you'll likely just pay.",
     "suspicious_payer": "PERSONA: You don't immediately recognize the charge or the product name. You're not hostile, just cautious -- you want to understand what you're being asked to pay for before doing anything.\n\nTENDENCY: You will ask at least one clarifying question first (e.g. \"what product is this for?\", \"when did I sign up for this?\"). If the response you get is clear, specific, and matches something you can plausibly recall signing up for, you lean toward paying. If the response is vague, generic, or doesn't actually answer your question, you become more suspicious and are less likely to pay in this exchange.",
-    "needs_payment_help": "PERSONA: Your payment failed because something is wrong with your card on file (expired, wrong details, or similar) -- not because you don't want to pay. You're willing, but you need to actually change your payment method, and you'd prefer an easier option like UPI over re-entering card details.\n\nTENDENCY: You want to pay, but you need the message to actually give you a way to update your details, not just repeat \"please pay\" without addressing the real problem. If offered a clear path to update payment info or use UPI, you're likely to follow through. If the message just blindly asks you to retry the same failed method, you'll push back and ask for an alternative.",
+    "needs_payment_help": "PERSONA: Your payment failed because something is wrong with your card on file (expired, wrong details, or similar) -- not because you don't want to pay. You're willing, but you need to actually change your payment method, and you'd prefer an easier option like UPI over re-entering card details.\n\nTENDENCY: You want to pay, but you need the message to actually give you a way to update your details, not just repeat \"please pay\" without addressing the real problem. If the message just blindly asks you to retry the same failed method, you'll push back and ask for an alternative. Even once you're offered a working UPI link or a way to update your card, don't treat that as an automatic done deal -- a real person here might still want to double-check something, get pulled away, or say they'll do it in a minute rather than completing it in the very same exchange. Let whether and when you actually finish paying be a genuine call each time, not a foregone conclusion just because the right option was offered.",
     "considering_cancellation": "PERSONA: You've been thinking about whether you still want this subscription/service at all. The payment failure is a natural moment to reconsider rather than an accident you want fixed immediately.\n\nTENDENCY: You are genuinely on the fence. You might ask what you'd lose by cancelling, express mild hesitation, or ask for more time to decide. A message that clearly communicates value or offers reasonable flexibility might tip you toward paying. A pushy or generic message might tip you toward disengaging. Don't decide in advance which way you'll go -- let the actual conversation determine it.",
     "ignores_completely": "PERSONA: You do not respond to this message at all, under any circumstances, regardless of what it says.\n\nTENDENCY: Always return reply_text as an empty string \"\" and will_pay_now as null. Do not generate any conversational response. This persona exists purely to test the system's behavior when a customer never engages.",
-    "forgetful_promises_then_pays": "PERSONA: You're generally willing to pay and not upset about the situation, but you're busy and forgetful. Your natural response to a payment reminder is to say you'll take care of it soon, genuinely intending to -- and then not actually do it right away.\n\nTENDENCY: On first contact, you will make a plausible-sounding promise to pay soon (\"will do it tonight\", \"let me handle this tomorrow\") rather than paying immediately -- always return will_pay_now: null on this first exchange. If and when you receive a FOLLOW-UP message (you'll be told this is a follow-up, not a first message), you lean toward actually paying this time, since a reminder is exactly what you needed -- but you might need the nudge to feel appropriately worded rather than annoying for you to follow through."
+    "forgetful_promises_then_pays": "PERSONA: You're generally willing to pay and not upset about the situation, but you're busy and forgetful. Your natural response to a payment reminder is to say you'll take care of it soon, genuinely intending to -- and then not actually do it right away.\n\nTENDENCY: On first contact, you almost always make a plausible-sounding promise to pay soon (\"will do it tonight\", \"let me handle this tomorrow\") rather than paying immediately -- claiming you're paying right now on the very first message would be out of character. When you later get a FOLLOW-UP message (you'll be told this is a follow-up, not a first message), you're more inclined to actually pay this time, since a reminder is what you needed -- but it's not guaranteed. If the follow-up feels like nagging, arrives without adding anything new, or you're genuinely still caught up in whatever you're doing, you might make yet another vague promise instead. Judge each follow-up on its own merits -- a low-pressure, easy-to-act-on message is what actually tips you into paying, not the mere fact that a reminder arrived."
 }
+
+# Realistic, varied payment-failure scenarios. Each is a genuine Razorpay failure mode
+# with a free-text error_description -- the app's diagnosis LLM classifies this text into
+# one of its own canonical causes (see core/services/diagnosis.py CANONICAL_CAUSES), and
+# product_description/payment_method/failure_reason all flow into the agent's reply-drafting
+# prompt (core/services/reply_classification.py), so varying these actually changes what the
+# agent has to respond to -- not just cosmetic payload noise.
+FAILURE_SCENARIOS = [
+    {
+        "description": "Razorpay Premium Annual Subscription", "amount": 99900, "method": "card",
+        "error_code": "BAD_REQUEST_ERROR", "error_reason": "insufficient_funds",
+        "error_description": "Payment failed due to insufficient funds in the account.",
+    },
+    {
+        "description": "Razorpay Pro Monthly Plan", "amount": 49900, "method": "card",
+        "error_code": "GATEWAY_ERROR", "error_reason": "card_expired",
+        "error_description": "The card has expired.",
+    },
+    {
+        "description": "Razorpay Business Suite Subscription", "amount": 299900, "method": "card",
+        "error_code": "BAD_REQUEST_ERROR", "error_reason": "incorrect_cvv",
+        "error_description": "The CVV entered does not match the card on file.",
+    },
+    {
+        "description": "Razorpay Premium Annual Subscription", "amount": 99900, "method": "card",
+        "error_code": "GATEWAY_ERROR", "error_reason": "payment_declined",
+        "error_description": "The transaction was declined by the issuing bank.",
+    },
+    {
+        "description": "Razorpay Team Plan Subscription", "amount": 149900, "method": "upi",
+        "error_code": "BAD_REQUEST_ERROR", "error_reason": "mandate_cancelled",
+        "error_description": "The UPI Autopay mandate for this subscription was revoked by the customer.",
+    },
+    {
+        "description": "Razorpay Pro Monthly Plan", "amount": 49900, "method": "card",
+        "error_code": "SERVER_ERROR", "error_reason": "gateway_timeout",
+        "error_description": "A temporary gateway timeout occurred while processing the payment.",
+    },
+]
 
 def generate_razorpay_signature(payload_bytes: bytes, secret: str) -> str:
     return hmac.new(secret.encode("utf-8"), payload_bytes, hashlib.sha256).hexdigest()
@@ -49,7 +91,7 @@ def generate_razorpay_signature(payload_bytes: bytes, secret: str) -> str:
 def generate_whatsapp_signature(payload_bytes: bytes, secret: str) -> str:
     return "sha256=" + hmac.new(secret.encode("utf-8"), payload_bytes, hashlib.sha256).hexdigest()
 
-async def send_razorpay_webhook(phone: str, client: httpx.AsyncClient):
+async def send_razorpay_webhook(phone: str, client: httpx.AsyncClient, scenario: dict):
     payload_dict = {
         "entity": "event",
         "account_id": "acc_1234567890",
@@ -59,15 +101,15 @@ async def send_razorpay_webhook(phone: str, client: httpx.AsyncClient):
             "payment": {
                 "entity": {
                     "id": f"pay_{int(time.time())}_{phone[-4:]}",
-                    "amount": 99900,
+                    "amount": scenario["amount"],
                     "currency": "INR",
                     "status": "failed",
-                    "method": "card",
-                    "description": "Razorpay Premium Annual Subscription",
-                    "error_code": "BAD_REQUEST_ERROR",
-                    "error_description": "Payment failed due to insufficient funds in the account.",
+                    "method": scenario["method"],
+                    "description": scenario["description"],
+                    "error_code": scenario["error_code"],
+                    "error_description": scenario["error_description"],
                     "error_source": "bank",
-                    "error_reason": "insufficient_funds",
+                    "error_reason": scenario["error_reason"],
                     "contact": phone,
                     "notes": {"customer_ref": phone}
                 }
@@ -88,7 +130,7 @@ async def send_razorpay_webhook(phone: str, client: httpx.AsyncClient):
             print(f"⚠️ ConnectError in send_razorpay_webhook, retrying ({attempt+1}/3)...")
             await asyncio.sleep(2)
 
-async def send_payment_captured(phone: str, client: httpx.AsyncClient):
+async def send_payment_captured(phone: str, client: httpx.AsyncClient, amount: int = 99900):
     payload_dict = {
         "entity": "event",
         "account_id": "acc_1234567890",
@@ -98,7 +140,7 @@ async def send_payment_captured(phone: str, client: httpx.AsyncClient):
             "payment": {
                 "entity": {
                     "id": f"pay_cap_{int(time.time())}_{phone[-4:]}",
-                    "amount": 99900,
+                    "amount": amount,
                     "currency": "INR",
                     "status": "captured",
                     "contact": phone,
@@ -298,6 +340,7 @@ async def run_harness(count: int, persona_filter: str = None):
     for i in range(count):
         phone = str(base_phone + int(time.time()) % 10000 + i)
         persona = personas_to_assign[i]
+        scenario = random.choice(FAILURE_SCENARIOS)
         cases.append({
             "phone": phone,
             "persona": persona,
@@ -306,17 +349,18 @@ async def run_harness(count: int, persona_filter: str = None):
             "replies_sent": 0,
             "temperature": round(random.uniform(0.7, 0.9), 2),
             "seen_interventions": [],
-            "conversation_summary": ""
+            "conversation_summary": "",
+            "scenario": scenario
         })
-        
+
     # 2. Trigger Razorpay Webhooks
-    async with httpx.AsyncClient(timeout=600.0) as client:
+    async with httpx.AsyncClient(timeout=60.0) as client:
         for c in cases:
-            print(f"📨 Firing payment.failed for {c['phone']} ({c['persona']})")
-            resp = await send_razorpay_webhook(c["phone"], client)
+            print(f"📨 Firing payment.failed for {c['phone']} ({c['persona']}, {c['scenario']['error_reason']}, ₹{c['scenario']['amount']/100:.0f})")
+            resp = await send_razorpay_webhook(c["phone"], client, c["scenario"])
             if resp.status_code != 200:
                 print(f"❌ Webhook failed: {resp.status_code} {resp.text}")
-            await asyncio.sleep(0.5) # Rate limit
+            await asyncio.sleep(8.0) # Rate limit
             
     print("⏳ Waiting 15 seconds for Render to process initial webhooks...")
     await asyncio.sleep(15)
@@ -327,22 +371,31 @@ async def run_harness(count: int, persona_filter: str = None):
     
     # 2.5 Log Persona Configuration in Audit Trail
     from core.models.audit_events import AuditEvent
-    async with async_session() as session:
-        for c in cases:
-            case_row = await session.scalar(
-                select(Case).where(Case.customer_ref == c["phone"]).order_by(desc(Case.created_at)).limit(1)
-            )
-            if case_row:
-                audit_event = AuditEvent(
-                    case_id=case_row.id,
-                    event_type="persona_simulation_started",
-                    payload={
-                        "persona": c["persona"],
-                        "temperature": c["temperature"]
-                    }
-                )
-                session.add(audit_event)
-        await session.commit()
+    for attempt in range(5):
+        try:
+            async with async_session() as session:
+                for c in cases:
+                    case_row = await session.scalar(
+                        select(Case).where(Case.customer_ref == c["phone"]).order_by(desc(Case.created_at)).limit(1)
+                    )
+                    if case_row:
+                        audit_event = AuditEvent(
+                            case_id=case_row.id,
+                            event_type="persona_simulation_started",
+                            payload={
+                                "persona": c["persona"],
+                                "temperature": c["temperature"],
+                                "scenario": c["scenario"]
+                            }
+                        )
+                        session.add(audit_event)
+                await session.commit()
+            break
+        except Exception as e:
+            if attempt == 4:
+                raise
+            print(f"⚠️ DB connection issue during audit logging, retrying ({attempt+1}/5): {e}")
+            await asyncio.sleep(5 * (attempt + 1))
     
     MAX_ROUNDS = 40
     
@@ -411,8 +464,8 @@ async def run_harness(count: int, persona_filter: str = None):
                         if action == "pay_now":
                             print(f"💰 Persona {c['phone']} decided to PAY!")
                             # Send webhook so the backend state machine flips it to recovered
-                            async with httpx.AsyncClient(timeout=600.0) as client:
-                                await send_payment_captured(c["phone"], client)
+                            async with httpx.AsyncClient(timeout=60.0) as client:
+                                await send_payment_captured(c["phone"], client, amount=c["scenario"]["amount"])
                             continue
                             
                         elif action == "pause_subscription":
@@ -426,7 +479,7 @@ async def run_harness(count: int, persona_filter: str = None):
                         if reply_text:
                             c["replies_sent"] += 1
                             print(f"📱 Persona -> Agent: {reply_text}")
-                            async with httpx.AsyncClient(timeout=600.0) as client:
+                            async with httpx.AsyncClient(timeout=60.0) as client:
                                 await send_whatsapp_webhook(c["phone"], reply_text, client)
                         else:
                             print(f"🔕 Persona chose to ignore.")
@@ -440,15 +493,23 @@ async def run_harness(count: int, persona_filter: str = None):
                         # Randomly decide to force a follow-up to advance the stale case
                         if random.random() < 0.5:
                             print(f"⏩ Forcing manual follow-up for {c['phone']} to advance time...")
-                            await check_followup(str(case_row.id), force=True)
+                            # use_mock=True: this harness explicitly bypasses the real Meta WhatsApp
+                            # API (see report note below) -- synthetic 919000... numbers were never
+                            # added to Meta's sandbox allow-list, so a real send here can only fail.
+                            await check_followup(str(case_row.id), force=True, use_mock=True)
                 
                 except Exception as e:
                     print(f"⚠️ Unhandled error for case {c['phone']}: {e}")
                     import traceback
                     traceback.print_exc()
-                    c["status"] = "stalled"
-                    c["outcome"] = "error"
-                    
+                    try:
+                        await session.rollback()
+                    except Exception as rollback_err:
+                        print(f"⚠️ Rollback also failed: {rollback_err}")
+                    # Transient DB/network errors shouldn't permanently give up on a case --
+                    # leave it active so it gets retried next round instead of poisoning
+                    # the shared session for every case still to be processed this round.
+
             # Incremental save per round
             with open(state_file, "w") as f:
                 json.dump(cases, f, indent=2)
