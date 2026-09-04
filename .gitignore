@@ -81,6 +81,7 @@ logs/
 # Batch reports — generated output, not source
 reports/*.json
 !reports/live_persona_report.json
+!reports/batch_report.json
 reports/*.md
 
 # Scratch files

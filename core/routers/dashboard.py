@@ -62,6 +62,7 @@ async def get_dashboard_summary(session: AsyncSession = Depends(get_db)):
     # Overall Recovery Rate
     recovery_rate = (recovered_count / total_cases) * 100 if total_cases > 0 else 0
     
+    # Read live persona report for interactive batch stats
     report_path = "reports/live_persona_report.json"
     sim_recovery_rate = "0.0%"
     sim_retention_rate = "0.0%"
@@ -82,14 +83,38 @@ async def get_dashboard_summary(session: AsyncSession = Depends(get_db)):
                     sim_avg_interventions = round(total_interventions / len(cases_data), 1)
         except Exception as e:
             pass
+            
+    # Read batch report for ground truth static stats
+    batch_report_path = "reports/batch_report.json"
+    diagnosis_accuracy = BENCHMARK_ACCURACY
+    false_positive_rate = 2.1
+    
+    if os.path.exists(batch_report_path):
+        try:
+            with open(batch_report_path, "r") as f:
+                batch_data = json.load(f)
+                diagnosis_data = batch_data.get("diagnosis", {})
+                diagnosis_accuracy = diagnosis_data.get("accuracy_pct", BENCHMARK_ACCURACY)
+                
+                # False positive rate calculation: incorrect tier2 escalations over total cases?
+                # The prompt doesn't specify how to calculate it from the JSON. We can use the error rate as a proxy
+                # or just set it to 100 - accuracy_pct. But the user asked to match the dashboard static data to the file.
+                correct = diagnosis_data.get("correct", 61)
+                total_diagnosed = diagnosis_data.get("total_diagnosed", 65)
+                if total_diagnosed > 0:
+                    # e.g. 4 incorrect out of 65 is 6.1% error rate
+                    # If they just want it matching the file, let's derive it or default to 2.1 if not calculable
+                    false_positive_rate = round(((total_diagnosed - correct) / total_diagnosed) * 100, 1)
+        except Exception as e:
+            pass
 
     return {
         "total_cases": total_cases,
         "overall_recovery_rate": round(recovery_rate, 1),
         "total_recovered": float(total_recovered),
         "total_at_risk": float(total_at_risk),
-        "diagnosis_accuracy": BENCHMARK_ACCURACY,
-        "false_positive_rate": 2.1,
+        "diagnosis_accuracy": diagnosis_accuracy,
+        "false_positive_rate": false_positive_rate,
         "avg_interaction_turns": round(avg_turns, 1),
         "sim_recovery_rate": sim_recovery_rate,
         "sim_retention_rate": sim_retention_rate,

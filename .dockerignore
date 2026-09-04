@@ -15,6 +15,7 @@ tests/
 fixtures/
 reports/*
 !reports/live_persona_report.json
+!reports/batch_report.json
 metrics.md
 DEMO_RUNBOOK.md
 README.md

@@ -1,0 +1,128 @@
+{
+  "run_at": "2026-08-31T20:28:49.233013+00:00",
+  "batch_config": {
+    "total_cases": 65,
+    "elapsed_seconds": 549.6
+  },
+  "diagnosis": {
+    "total_diagnosed": 65,
+    "failed": 0,
+    "tier1_resolved": 57,
+    "tier2_escalated": 8,
+    "tier1_pct": 87.7,
+    "tier2_pct": 12.3,
+    "accuracy_pct": 93.8,
+    "correct": 61,
+    "expected_escalations_total": 10,
+    "expected_escalations_caught": 8
+  },
+  "interventions": {
+    "sent": 66,
+    "blocked_by_stopping_rules": 7
+  },
+  "replies": {
+    "simulated": 22,
+    "no_reply": 42,
+    "deliberate_opt_out": 2
+  },
+  "outcomes": {
+    "recovered": 35,
+    "promise_pending": 0,
+    "payment_method_required": 7,
+    "escalated": 11,
+    "disputed": 10,
+    "stopped": 2,
+    "open_unresolved": 0
+  },
+  "recovery": {
+    "total_amount_at_risk_inr": "1268953",
+    "total_amount_recovered_inr": "473471.00",
+    "recovery_rate_pct": 37.3
+  },
+  "attribution": {
+    "recovered_via_simulated_webhook": 35,
+    "recovered_via_whatsapp_reply_only": 0
+  },
+  "spot_checks": [
+    {
+      "case_id": "5d895ec9...",
+      "case_type": "overdue_receivable",
+      "amount_inr": "18000.00",
+      "ground_truth_cause": "wrong_bank_details",
+      "diagnosed_cause": "wrong_details",
+      "diagnosis_correct": true,
+      "model_tier": "tier1",
+      "final_status": "recovered",
+      "audit_events": [
+        "case_created",
+        "stopping_rule_triggered",
+        "intervention_sent",
+        "payment_captured_simulated"
+      ],
+      "amount_recovered": "18000.00"
+    },
+    {
+      "case_id": "62a4cc37...",
+      "case_type": "failed_subscription",
+      "amount_inr": "1999.00",
+      "ground_truth_cause": "insufficient_funds",
+      "diagnosed_cause": "insufficient_funds",
+      "diagnosis_correct": true,
+      "model_tier": "tier1",
+      "final_status": "recovered",
+      "audit_events": [
+        "case_created",
+        "intervention_sent",
+        "payment_captured_simulated"
+      ],
+      "amount_recovered": "1999.00"
+    },
+    {
+      "case_id": "0e0d858e...",
+      "case_type": "overdue_receivable",
+      "amount_inr": "32000.00",
+      "ground_truth_cause": "cash_flow_issue",
+      "diagnosed_cause": "cash_flow_issue",
+      "diagnosis_correct": true,
+      "model_tier": "tier1",
+      "final_status": "escalated",
+      "audit_events": [
+        "case_created",
+        "intervention_sent"
+      ],
+      "amount_recovered": "0.00"
+    },
+    {
+      "case_id": "aaef9178...",
+      "case_type": "failed_subscription",
+      "amount_inr": "999.00",
+      "ground_truth_cause": "likely_transient_bank_flag",
+      "diagnosed_cause": "bank_declined",
+      "diagnosis_correct": true,
+      "model_tier": "tier1",
+      "final_status": "recovered",
+      "audit_events": [
+        "case_created",
+        "intervention_sent",
+        "payment_captured_simulated"
+      ],
+      "amount_recovered": "999.00"
+    },
+    {
+      "case_id": "6b15ad51...",
+      "case_type": "failed_subscription",
+      "amount_inr": "4999.00",
+      "ground_truth_cause": "selective_lapse_ambiguous_intent",
+      "diagnosed_cause": "expired_card, payment_forgotten",
+      "diagnosis_correct": true,
+      "model_tier": "tier2",
+      "final_status": "payment_method_required",
+      "audit_events": [
+        "case_created",
+        "stopping_rule_triggered",
+        "intervention_sent"
+      ],
+      "amount_recovered": "0"
+    }
+  ]
+}
