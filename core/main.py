@@ -13,6 +13,7 @@ Middleware:
 Routes:
   - GET /health  — liveness + DB connectivity check.
 """
+import asyncio
 import structlog
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -24,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.routers import webhooks as webhooks_router
 from core.routers import dashboard as dashboard_router
 from core.routers import sandbox as sandbox_router
+from core.services.followup_scheduler import followup_scheduler_loop
 
 log = structlog.get_logger()
 
@@ -34,11 +36,22 @@ async def lifespan(app: FastAPI):
     setup_logging(settings.log_level)
     log.info("startup", env=settings.app_env, log_level=settings.log_level)
     await init_db(settings.database_url)
+
+    # Proactive follow-up reminders (see core/services/followup_scheduler.py) --
+    # without this, no case that goes quiet after a "promise_made" reply is
+    # ever re-engaged.
+    scheduler_task = asyncio.create_task(followup_scheduler_loop())
+
     log.info("ready")
 
     yield  # application runs
 
     # ── Shutdown ───────────────────────────────────────────────
+    scheduler_task.cancel()
+    try:
+        await scheduler_task
+    except asyncio.CancelledError:
+        pass
     log.info("shutdown")
 
 

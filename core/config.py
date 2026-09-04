@@ -58,6 +58,15 @@ class Settings(BaseSettings):
     whatsapp_app_secret: str = ""
     use_mock_channel: bool = False
 
+    # ── Follow-up scheduler ─────────────────────────────────────
+    # Proactive reminders previously only ever fired from a manually-run
+    # script or the sandbox's own test loop -- nothing in the deployed app
+    # ever re-engaged a case that went quiet. This background loop is that
+    # missing piece: how often it scans, and how long a case must have been
+    # inactive before it's considered due for a reminder.
+    followup_scan_interval_minutes: int = 15
+    followup_stale_hours: float = 4.0
+
 
 # Module-level singleton — imported throughout the codebase.
 # Instantiation here means a missing required var raises ValidationError

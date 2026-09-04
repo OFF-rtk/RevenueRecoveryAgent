@@ -13,9 +13,14 @@ which the caller must handle by logging and returning early — never crashing.
 Rules (evaluated in priority order):
   1. Opt-out gate       — case.status == "stopped" → block immediately
   2. Max-retry cap      — interventions count >= MAX_RETRIES → escalate
+                          (only for cold outreach; skipped once the customer
+                          is actively replying — see rule 5 for that case)
   3. No-blind-retry     — cause is expired_card/wrong_details and
                           the attempted action is a plain retry → redirect
                           to payment_method_required flow instead
+  5. Broken-promise cap — customer has said "I'll pay later" MAX_BROKEN_PROMISES
+                          times without paying → escalate to a human instead of
+                          looping on the same promise forever
 """
 from __future__ import annotations
 
@@ -30,11 +35,13 @@ from core.models.audit_events import AuditEvent
 from core.models.cases import Case
 from core.models.interventions import Intervention
 from core.models.outcomes import Outcome
+from core.models.replies import Reply
 from core.models.state_transitions import StateTransition
 
 log = structlog.get_logger(__name__)
 
 MAX_RETRIES = 3
+MAX_BROKEN_PROMISES = 3
 
 # Causes that require updated payment info before any retry can happen.
 REQUIRES_UPDATED_INFO = {"expired_card", "wrong_details", "invalid_account"}
@@ -212,6 +219,62 @@ async def check_dispute_raised(
             )
 
 
+async def check_broken_promises(
+    case: Case,
+    session: AsyncSession,
+    action_type: Literal["retry", "follow_up"] = "follow_up",
+) -> None:
+    """
+    Rule 5: Escalate after too many broken promises.
+    check_max_retries deliberately exempts an actively-replying customer from
+    the cold-outreach cap -- but nothing else caps it, so a customer who keeps
+    saying "I'll pay later" can cycle through promise_made -> promise_pending
+    indefinitely with no escalation. Count how many times *this* customer has
+    made that promise and hand off to a human once it's clearly not working.
+    Only applies to the follow-up path -- a cold case can't have broken a
+    promise it never made.
+    """
+    if action_type != "follow_up":
+        return
+
+    count = await session.scalar(
+        select(func.count()).where(
+            Reply.case_id == case.id,
+            Reply.classified_state == "promise_made",
+        )
+    )
+    if count is None:
+        count = 0
+
+    if count >= MAX_BROKEN_PROMISES:
+        old_status = case.status
+        case.status = "human_escalated"
+
+        transition = StateTransition(
+            case_id=case.id,
+            from_state=old_status,
+            to_state="human_escalated",
+            reason="max_broken_promises_exceeded",
+        )
+        session.add(transition)
+
+        outcome = Outcome(
+            case_id=case.id,
+            final_state="human_escalated",
+            amount_recovered=0,
+        )
+        session.add(outcome)
+
+        await _log_stopping_event(
+            session, case.id, "max_broken_promises",
+            {"promise_count": count, "cap": MAX_BROKEN_PROMISES},
+        )
+        raise StoppingRuleError(
+            rule="max_broken_promises",
+            message=f"Case {case.id} has broken its payment promise {count} times — escalating to a human.",
+        )
+
+
 async def check_stopping_rules(
     case: Case,
     session: AsyncSession,
@@ -233,3 +296,4 @@ async def check_stopping_rules(
     await check_max_retries(case, session, action_type)
     await check_no_blind_retry(case, session, causes, action_type)
     await check_dispute_raised(case, session, causes)
+    await check_broken_promises(case, session, action_type)
