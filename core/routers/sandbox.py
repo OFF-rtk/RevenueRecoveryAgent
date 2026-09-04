@@ -263,14 +263,12 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
         conversation_summary = ""
         replies_sent = 0
         rounds_stalled = 0
-        # How many times in a row the case has landed back in promise_pending
-        # without paying -- used to force a real reminder (see below).
-        promise_streak = 0
-        reminder_forced_this_streak = False
-        # Set at the end of a round that just sent a reply during a promise
-        # streak; consumed at the *start* of the next round (after the normal
-        # sleep gives the backend time to actually process that reply) so we
-        # never call check_followup against state that hasn't landed yet.
+        # Set when the latest message was just the state machine's own
+        # reactive "thanks, here's the link" ack (sent automatically the
+        # instant the customer replies) rather than a genuine follow-up --
+        # consumed at the *start* of the next round (after the normal sleep
+        # gives the backend time to actually process the intervening reply)
+        # so check_followup never runs against state that hasn't landed yet.
         pending_reminder_force = False
 
         for round_idx in range(40):
@@ -319,11 +317,28 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                     seen_interventions.append(str(intervention.id))
                     agent_text = intervention.message_sent
 
-                    if case_row.status == "promise_pending":
-                        promise_streak += 1
-                    else:
-                        promise_streak = 0
-                        reminder_forced_this_streak = False
+                    # A "followup_sent" audit event is the state machine's
+                    # immediate reactive ack to what the customer just said
+                    # (see process_inbound_reply) -- distinct from
+                    # "intervention_sent" (first contact) and
+                    # "manual_followup_check_triggered" (a genuine, forced
+                    # reminder). While in promise_pending, don't make the
+                    # persona reply to its own "thanks, here's the link"; the
+                    # intended cycle is promise -> ack -> (time passes) ->
+                    # real reminder -> promise again, not several rounds of
+                    # back-to-back pleasantries with no reminder in between.
+                    latest_msg_event = await session.scalar(
+                        select(AuditEvent)
+                        .where(AuditEvent.case_id == case_row.id)
+                        .where(AuditEvent.event_type.in_(["intervention_sent", "followup_sent", "manual_followup_check_triggered"]))
+                        .order_by(desc(AuditEvent.created_at))
+                        .limit(1)
+                    )
+                    is_reactive_ack = latest_msg_event is not None and latest_msg_event.event_type == "followup_sent"
+
+                    if is_reactive_ack and case_row.status == "promise_pending":
+                        pending_reminder_force = True
+                        continue
 
                     # Persona replies
                     llm_resp = await get_persona_reply(
@@ -345,16 +360,6 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                         if reply_text:
                             await send_whatsapp_webhook(customer_ref, reply_text, client)
                             replies_sent += 1
-
-                            # Fire after the *first* promise, not the second --
-                            # the natural conversation can reach the backend's
-                            # own 3-broken-promises cap as early as the very
-                            # next round, so waiting any longer risks the
-                            # reminder landing after the case has already been
-                            # escalated (see the status re-check above).
-                            if promise_streak >= 1 and not reminder_forced_this_streak:
-                                reminder_forced_this_streak = True
-                                pending_reminder_force = True
                 else:
                     rounds_stalled += 1
                     if rounds_stalled >= 3:
