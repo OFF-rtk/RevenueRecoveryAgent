@@ -12,7 +12,7 @@ function AuditNode({ evt }: { evt: any }) {
   let iconClass = "bg-surface border-outline-variant";
 
   if (evt.type === "state_transition") {
-    badge = "State"; title = `Transition: ${evt.payload?.new_status}`;
+    badge = "State"; title = `Transition: ${evt.payload?.new_status || evt.payload?.to_state}`;
     colorClass = "bg-secondary-container border-secondary text-on-secondary-container";
     iconClass = "bg-secondary-container border-secondary";
   } else if (evt.type === "intervention_sent" || evt.type === "followup_sent") {

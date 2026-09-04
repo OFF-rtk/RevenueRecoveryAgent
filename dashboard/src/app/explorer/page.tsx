@@ -19,7 +19,7 @@ function TimelineNode({ evt, idx }: { evt: any; idx: number }) {
     isJson = true;
   } else if (evt.type === "state_transition") {
     badge = "State";
-    title = `Transition: ${evt.payload?.new_status || evt.to}`;
+    title = `Transition: ${evt.payload?.new_status || evt.payload?.to_state || evt.to}`;
     displayDetail = evt.payload?.reason || evt.reason || "";
     colorClass = "bg-secondary-container border-secondary text-on-secondary-container";
     iconClass = "bg-secondary-container border-secondary";

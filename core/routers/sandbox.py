@@ -122,8 +122,9 @@ def cleanup_old_sessions():
         for k, _ in sorted_sessions[:100]:
             SANDBOX_SESSIONS.pop(k, None)
 
-RAZORPAY_WEBHOOK_URL = "http://localhost:8001/webhooks/razorpay"
-WHATSAPP_WEBHOOK_URL = "http://localhost:8001/webhooks/whatsapp"
+PORT = os.environ.get("PORT", "8001")
+RAZORPAY_WEBHOOK_URL = f"http://127.0.0.1:{PORT}/webhooks/razorpay"
+WHATSAPP_WEBHOOK_URL = f"http://127.0.0.1:{PORT}/webhooks/whatsapp"
 RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "test_webhook_secret_phase1")
 WHATSAPP_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "test_whatsapp_secret")
 
