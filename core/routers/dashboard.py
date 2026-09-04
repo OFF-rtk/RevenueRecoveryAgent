@@ -87,7 +87,7 @@ async def get_dashboard_summary(session: AsyncSession = Depends(get_db)):
     # Read batch report for ground truth static stats
     batch_report_path = "reports/batch_report.json"
     diagnosis_accuracy = BENCHMARK_ACCURACY
-    false_positive_rate = 2.1
+    escalation_recall = "8/10"
     
     if os.path.exists(batch_report_path):
         try:
@@ -96,15 +96,9 @@ async def get_dashboard_summary(session: AsyncSession = Depends(get_db)):
                 diagnosis_data = batch_data.get("diagnosis", {})
                 diagnosis_accuracy = diagnosis_data.get("accuracy_pct", BENCHMARK_ACCURACY)
                 
-                # False positive rate calculation: incorrect tier2 escalations over total cases?
-                # The prompt doesn't specify how to calculate it from the JSON. We can use the error rate as a proxy
-                # or just set it to 100 - accuracy_pct. But the user asked to match the dashboard static data to the file.
-                correct = diagnosis_data.get("correct", 61)
-                total_diagnosed = diagnosis_data.get("total_diagnosed", 65)
-                if total_diagnosed > 0:
-                    # e.g. 4 incorrect out of 65 is 6.1% error rate
-                    # If they just want it matching the file, let's derive it or default to 2.1 if not calculable
-                    false_positive_rate = round(((total_diagnosed - correct) / total_diagnosed) * 100, 1)
+                caught = diagnosis_data.get("expected_escalations_caught", 8)
+                total_expected = diagnosis_data.get("expected_escalations_total", 10)
+                escalation_recall = f"{caught}/{total_expected}"
         except Exception as e:
             pass
 
@@ -114,7 +108,7 @@ async def get_dashboard_summary(session: AsyncSession = Depends(get_db)):
         "total_recovered": float(total_recovered),
         "total_at_risk": float(total_at_risk),
         "diagnosis_accuracy": diagnosis_accuracy,
-        "false_positive_rate": false_positive_rate,
+        "escalation_recall": escalation_recall,
         "avg_interaction_turns": round(avg_turns, 1),
         "sim_recovery_rate": sim_recovery_rate,
         "sim_retention_rate": sim_retention_rate,

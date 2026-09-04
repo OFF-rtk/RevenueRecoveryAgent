@@ -76,12 +76,6 @@ export default function Dashboard() {
               <span className="font-display text-display text-on-surface">
                 {summary?.total_cases || 0}
               </span>
-              <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant flex items-center">
-                <span className="material-symbols-outlined text-[12px] text-green-600">
-                  arrow_upward
-                </span>
-                +12%
-              </span>
             </div>
           </div>
           {/* Recovery Rate */}
@@ -96,12 +90,6 @@ export default function Dashboard() {
               <span className="font-display text-display text-on-surface">
                 {summary?.overall_recovery_rate || 0}%
               </span>
-              <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant flex items-center">
-                <span className="material-symbols-outlined text-[12px] text-red-600">
-                  arrow_downward
-                </span>
-                -2.1%
-              </span>
             </div>
           </div>
           {/* Financials */}
@@ -115,7 +103,7 @@ export default function Dashboard() {
             <div className="flex items-end justify-between w-full">
               <div>
                 <span className="font-display text-display text-on-surface">
-                  ${(summary?.total_recovered || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{(summary?.total_recovered || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant block mt-1">
                   Recovered
@@ -124,7 +112,7 @@ export default function Dashboard() {
               <div className="h-8 w-[1px] bg-outline-variant mx-4"></div>
               <div className="text-right">
                 <span className="font-display text-display text-on-surface-variant">
-                  ${(summary?.total_at_risk || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{(summary?.total_at_risk || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant block mt-1">
                   At Risk (Pending)
@@ -175,10 +163,10 @@ export default function Dashboard() {
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
                   <span className="font-data-tabular text-data-tabular text-on-surface-variant">
-                    False Positive Rate
+                    Escalation Recall
                   </span>
                   <span className="font-data-tabular text-data-tabular text-on-surface font-semibold">
-                    {summary?.false_positive_rate || 0}%
+                    {summary?.escalation_recall || "0/0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
