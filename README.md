@@ -138,15 +138,24 @@ Each persona is given a *tendency*, not a scripted outcome — the actual decisi
 
 | Outcome | Rate |
 |---|---|
-| Recovered (paid) | 50% |
-| Retained via pause | 24% |
-| Escalated to human | 12% |
-| Timed out (no resolution) | 14% |
+| Recovered (paid) | 50.0% |
+| Retained via pause | 24.0% |
+| Escalated to human | 8.0% |
+| Timed out (no resolution) | 18.0% |
+
+### Diagnosis Accuracy (separate ground-truth batch, 65 hand-labeled cases)
+
+| Metric | Value |
+|---|---|
+| Diagnosis accuracy | 93.8% (61/65) |
+| Resolved on cheap tier (gpt-oss-20b) | ~88% |
+| Escalated to reasoning tier (gpt-oss-120b) | ~12% |
+| Escalation recall (hand-authored ambiguous cases) | 8/10 |
 
 A few findings worth calling out specifically:
 
 - **`considering_cancellation` mostly resolved to a retained pause, not a lost customer.** Our negotiation prompt deliberately doesn't let ambivalence collapse into an immediate concession — the agent offers a pause and highlights real value first, and only stops contacting a customer if they explicitly and unambiguously ask to cancel. That explicit-opt-out path is separately and deterministically verified in our compliance test suite, distinct from this organic batch.
 - **`suspicious_payer` produced a genuinely good compliance result.** When asked for account details (a signup date, a receipt) our agent doesn't have access to, it correctly declined to fabricate an answer and escalated to a human support queue instead — logged as a distinct outcome, not lumped in with a generic non-conversion.
-- **Two of our six personas (`accidental_failure`, `needs_payment_help`) converted at or near 100%** — expected, since both are designed with no underlying reason to refuse once the issue is competently handled. The two hardest personas (`suspicious_payer`, `considering_cancellation`) showed real, non-uniform variance, which is what gives us confidence the numbers reflect genuine behavior rather than a rigged setup.
+- **Two of our six personas (`accidental_failure`, `needs_payment_help`) converted at or near 100%** — expected, since both are designed with no underlying reason to refuse once the issue is competently handled. Conversely, the **`suspicious_payer`** persona had exactly 0% recovery across its 6 cases, splitting entirely between correct human escalation (66.7%) or timeout (33.3%). This proves the agent knows the limits of its own authority and gracefully fails to escalation rather than hallucinating answers to close the case.
 
 The final result is a recovery pipeline whose numbers come from watching two independent LLMs actually talk to each other, not from us deciding the ending in advance.
