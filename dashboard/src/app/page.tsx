@@ -161,14 +161,7 @@ export default function Dashboard() {
                     {summary?.diagnosis_accuracy || 0}%
                   </span>
                 </div>
-                <div className="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
-                  <span className="font-data-tabular text-data-tabular text-on-surface-variant">
-                    Escalation Recall
-                  </span>
-                  <span className="font-data-tabular text-data-tabular text-on-surface font-semibold">
-                    {summary?.escalation_recall || "0/0"}
-                  </span>
-                </div>
+
                 <div className="flex justify-between items-center">
                   <span className="font-data-tabular text-data-tabular text-on-surface-variant">
                     Total Volume Processed
