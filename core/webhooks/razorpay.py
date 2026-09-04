@@ -240,7 +240,7 @@ async def process_webhook(
             # Send confirmation if we want (Phase 5 requires it if no session open, handled by template)
             from core.channels.whatsapp import WhatsAppChannel
             from core.config import settings
-            channel = WhatsAppChannel(settings.phone_number_id, settings.whatsapp_token)
+            channel = WhatsAppChannel(api_token=settings.whatsapp_token, phone_number_id=settings.phone_number_id)
             await channel.send_template(
                 to=customer_ref,
                 template_name="payment_confirmed_v1",
