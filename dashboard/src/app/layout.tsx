@@ -3,8 +3,8 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
-  title: "Judge Terminal",
-  description: "Integrity Terminal - Recovery Specialist",
+  title: "Revenue Recovery Agent",
+  description: "Revenue Recovery Agent - Recovery Specialist",
 };
 
 export default function RootLayout({

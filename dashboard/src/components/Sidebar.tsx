@@ -21,7 +21,7 @@ export default function Sidebar() {
         />
         <div>
           <h1 className="font-headline-md text-headline-md font-bold text-on-surface">
-            Integrity Terminal
+            Revenue Recovery Agent
           </h1>
           <p className="font-label-caps text-label-caps text-on-surface-variant">
             Recovery Specialist
