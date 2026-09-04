@@ -153,8 +153,25 @@ export default function Sandbox() {
         return;
       }
 
+      if (res.status === 404) {
+        // SANDBOX_SESSIONS is in-memory on the backend -- a redeploy or
+        // restart mid-run wipes it, and this session_id stops existing.
+        // Fail visibly instead of crashing on `undefined.filter` below.
+        setPollingError("This session was lost (the backend restarted mid-run). Please start a new simulation.");
+        clearInterval(pollInterval.current);
+        setRunning(false);
+        return;
+      }
+
+      if (!res.ok) {
+        setPollingError(`Status check failed (${res.status}). Please try again.`);
+        clearInterval(pollInterval.current);
+        setRunning(false);
+        return;
+      }
+
       const data = await res.json();
-      setEvents(data.events);
+      setEvents(data.events || []);
 
       if (data.done || data.error) {
         clearInterval(pollInterval.current);
