@@ -2,91 +2,163 @@
 
 import { useState, useEffect } from "react";
 
-function TimelineNode({ evt, idx }: { evt: any; idx: number }) {
+// Drops falsy entries and narrows to string[] (plain .filter(Boolean) keeps
+// the `false` branch of `cond && "text"` in the inferred type).
+const compact = (arr: (string | false | undefined | null)[]): string[] => arr.filter((x): x is string => Boolean(x));
+
+// One entry per real event_type emitted by the backend (see core/**/*.py and
+// scripts/*.py for `event_type="..."`). Anything not listed falls back to a
+// plain "System" style further down, so a new event type never renders blank.
+const EVENT_CONFIG: Record<string, { badge: string; icon: string; colorClass: string; title: (p: any) => string; detail: (p: any) => string[] }> = {
+  case_created: {
+    badge: "Case", icon: "flag",
+    colorClass: "bg-surface-container-high border-outline-variant text-on-surface",
+    title: () => "Case Created",
+    detail: (p) => compact([p.razorpay_event && `Event: ${p.razorpay_event}`, p.entity_id && `Entity: ${p.entity_id}`, p.source && `Source: ${p.source}`]),
+  },
+  diagnosis_completed: {
+    badge: "Diagnosis", icon: "psychology",
+    colorClass: "bg-tertiary-container border-tertiary text-on-tertiary-container",
+    title: (p) => `Diagnosed: ${(p.causes || [])[0] || "unknown"}`,
+    detail: (p) => compact([`Tier ${p.tier} model`, typeof p.confidence === "number" && `Confidence: ${p.confidence.toFixed(2)}`, p.reasoning]),
+  },
+  diagnosis_failed: {
+    badge: "Diagnosis Failed", icon: "error",
+    colorClass: "bg-error-container border-error text-on-error-container",
+    title: () => "Diagnosis Failed",
+    detail: (p) => compact([p.error]),
+  },
+  intervention_sent: {
+    badge: "Agent", icon: "forum",
+    colorClass: "bg-primary-fixed border-primary text-on-primary-fixed",
+    title: () => "Intervention Sent",
+    detail: (p) => compact([p.message, p.template_name && `Template: ${p.template_name}`]),
+  },
+  followup_sent: {
+    badge: "Agent", icon: "forum",
+    colorClass: "bg-primary-fixed border-primary text-on-primary-fixed",
+    title: () => "Follow-up Sent",
+    detail: (p) => compact([p.message]),
+  },
+  manual_followup_check_triggered: {
+    badge: "Follow-up", icon: "notifications_active",
+    colorClass: "bg-primary-fixed border-primary text-on-primary-fixed",
+    title: () => "Automated Nudge Sent",
+    detail: (p) => compact([p.message, `Attempt #${p.attempt_number}`, p.session_open === false && "Outside 24h WhatsApp session window"]),
+  },
+  customer_reply: {
+    badge: "Customer", icon: "reply",
+    colorClass: "bg-surface-container-high border-outline-variant text-on-surface",
+    title: () => "Reply Received",
+    detail: (p) => compact([p.message, p.classified_state && `Classified as: ${p.classified_state}`]),
+  },
+  whatsapp_webhook_received: {
+    badge: "WhatsApp", icon: "chat_bubble",
+    colorClass: "bg-surface-container-high border-outline-variant text-on-surface",
+    title: () => "WhatsApp Webhook Received",
+    detail: () => [],
+  },
+  state_transition: {
+    badge: "State", icon: "swap_horiz",
+    colorClass: "bg-secondary-container border-secondary text-on-secondary-container",
+    title: (p) => `Transition: ${p.from_state || "?"} → ${p.to_state || p.new_status || "?"}`,
+    detail: (p) => compact([p.reason]),
+  },
+  stopping_rule_triggered: {
+    badge: "Stopped", icon: "block",
+    colorClass: "bg-error-container border-error text-on-error-container",
+    title: (p) => `Stopping Rule: ${p.rule || "triggered"}`,
+    detail: (p) => Object.entries(p).filter(([k]) => k !== "rule").map(([k, v]) => `${k}: ${v}`),
+  },
+  case_escalated: {
+    badge: "Escalated", icon: "support_agent",
+    colorClass: "bg-error-container border-error text-on-error-container",
+    title: () => "Escalated to Human",
+    detail: (p) => compact([p.reason && `Reason: ${p.reason}`, p.rounds && `After ${p.rounds} rounds`]),
+  },
+  payment_captured_simulated: {
+    badge: "Payment", icon: "payments",
+    colorClass: "bg-tertiary-container border-tertiary text-on-tertiary-container",
+    title: () => "Payment Captured",
+    detail: (p) => compact([p.attribution && `Via: ${p.attribution}`]),
+  },
+  persona_simulation_started: {
+    badge: "Simulation", icon: "smart_toy",
+    colorClass: "bg-surface-container-high border-outline-variant text-on-surface",
+    title: (p) => `Persona: ${(p.persona || "unknown").replace(/_/g, " ")}`,
+    detail: (p) => compact([typeof p.temperature === "number" && `Temperature: ${p.temperature}`]),
+  },
+};
+
+const DEFAULT_EVENT_CONFIG = {
+  badge: "System", icon: "info",
+  colorClass: "bg-surface-container-low border-outline-variant text-on-surface-variant",
+  title: (_p: any, name: string) => name.replace(/_/g, " "),
+  detail: (p: any) => Object.entries(p || {}).map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`),
+};
+
+function TimelineNode({ evt }: { evt: any }) {
   const [expanded, setExpanded] = useState(false);
 
-  let badge = null;
-  let title = "";
-  let displayDetail = "";
-  let isJson = false;
-  let colorClass = "bg-surface-container-low border-outline-variant text-on-surface-variant";
-  let iconClass = "bg-surface border-outline-variant";
-
-  if (evt.type === "audit") {
-    badge = "System";
-    title = "Audit Event: " + evt.event.replace(/_/g, ' ');
-    displayDetail = evt.payload ? JSON.stringify(evt.payload, null, 2) : "";
-    isJson = true;
-  } else if (evt.type === "state_transition") {
-    badge = "State";
-    title = `Transition: ${evt.payload?.new_status || evt.payload?.to_state || evt.to}`;
-    displayDetail = evt.payload?.reason || evt.reason || "";
-    colorClass = "bg-secondary-container border-secondary text-on-secondary-container";
-    iconClass = "bg-secondary-container border-secondary";
-  } else if (evt.type === "intervention_sent" || evt.type === "followup_sent") {
-    badge = "Agent";
-    title = evt.type === "followup_sent" ? "Follow-up Sent" : "Intervention Sent";
-    displayDetail = evt.payload?.message || evt.message;
-    colorClass = "bg-primary-fixed border-primary text-on-primary-fixed";
-    iconClass = "bg-primary-fixed border-primary";
-  } else if (evt.type === "customer_reply") {
-    badge = "Customer";
-    title = "Reply Received";
-    displayDetail = evt.payload?.message || evt.message;
-    colorClass = "bg-surface-container-high border-outline-variant text-on-surface";
-  } else if (evt.type === "diagnosis_completed") {
-    badge = "Diagnosis";
-    const conf = evt.payload?.confidence;
-    const confStr = typeof conf === 'number' ? conf.toFixed(2) : conf;
-    const tier = evt.payload?.tier;
-    const causes = evt.payload?.causes || [];
-    title = `Diagnosed: ${causes[0] || "unknown"} (tier ${tier}, conf ${confStr})`;
-    displayDetail = evt.payload?.reasoning || "";
-    colorClass = "bg-tertiary-container border-tertiary text-on-tertiary-container";
-    iconClass = "bg-tertiary-container border-tertiary";
-  }
-
-  // Pre-process any other JSON strings
-  if (!isJson && displayDetail && typeof displayDetail === "string" && (displayDetail.startsWith("{") || displayDetail.startsWith("["))) {
-    try {
-      displayDetail = JSON.stringify(JSON.parse(displayDetail), null, 2);
-      isJson = true;
-    } catch (e) {}
-  }
+  const eventName: string = evt.event || evt.type || "unknown";
+  const payload = evt.payload || {};
+  const config = EVENT_CONFIG[eventName];
+  const badge = config?.badge ?? DEFAULT_EVENT_CONFIG.badge;
+  const icon = config?.icon ?? DEFAULT_EVENT_CONFIG.icon;
+  const colorClass = config?.colorClass ?? DEFAULT_EVENT_CONFIG.colorClass;
+  const title = config ? config.title(payload) : DEFAULT_EVENT_CONFIG.title(payload, eventName);
+  const detailLines = config ? config.detail(payload) : DEFAULT_EVENT_CONFIG.detail(payload);
+  const rawJson = JSON.stringify(payload, null, 2);
 
   return (
-    <div className="mb-8 relative pl-6 cursor-pointer group" onClick={() => setExpanded(!expanded)}>
-      <div className={`absolute w-3 h-3 border-2 rounded-full -left-[6.5px] top-1 ${iconClass} group-hover:scale-110 transition-transform`}></div>
-      
-      <div className="flex items-center gap-2 mb-1">
-        <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant">
-          {new Date(evt.timestamp).toLocaleTimeString()}
-        </span>
-        <span className={`px-1.5 py-0.5 border rounded font-label-caps text-[9px] ${colorClass}`}>
-          {badge}
-        </span>
-        <span className="material-symbols-outlined text-on-surface-variant text-[14px] opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
-          {expanded ? "expand_less" : "expand_more"}
-        </span>
+    <div className="mb-6 relative pl-8 group">
+      <div className={`absolute w-6 h-6 border rounded-full -left-3 top-0 flex items-center justify-center ${colorClass}`}>
+        <span className="material-symbols-outlined" style={{ fontSize: "13px" }}>{icon}</span>
       </div>
-      
-      <p className="font-data-tabular text-data-tabular text-on-surface font-medium capitalize">
-        {title}
-      </p>
-      
-      <div className={`overflow-hidden transition-all duration-300 ${expanded ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
-        {displayDetail && (
-          <pre className="font-mono-timestamp text-[10px] bg-surface-container-lowest border border-outline-variant p-3 rounded-DEFAULT overflow-x-auto text-on-surface-variant whitespace-pre-wrap">
-            {displayDetail}
-          </pre>
+
+      <div
+        className="cursor-pointer"
+        onClick={() => detailLines.length > 0 && setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant">
+            {new Date(evt.timestamp).toLocaleTimeString()}
+          </span>
+          <span className={`px-1.5 py-0.5 border rounded font-label-caps text-[9px] uppercase tracking-wide ${colorClass}`}>
+            {badge}
+          </span>
+          {detailLines.length > 0 && (
+            <span className="material-symbols-outlined text-on-surface-variant text-[14px] opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+              {expanded ? "expand_less" : "expand_more"}
+            </span>
+          )}
+        </div>
+
+        <p className="font-data-tabular text-data-tabular text-on-surface font-medium capitalize">
+          {title}
+        </p>
+
+        {!expanded && detailLines.length > 0 && (
+          <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 overflow-hidden text-ellipsis whitespace-nowrap opacity-70">
+            {detailLines[0]}
+          </p>
         )}
       </div>
-      
-      {/* Show truncated preview when collapsed */}
-      {!expanded && displayDetail && (
-        <p className="font-body-sm text-body-sm text-on-surface-variant mt-1 overflow-hidden text-ellipsis whitespace-nowrap opacity-60">
-           {isJson ? "{ ... }" : displayDetail.substring(0, 50) + "..."}
-        </p>
+
+      {expanded && (
+        <div className="mt-2 space-y-2">
+          <ul className="text-[11px] text-on-surface-variant leading-relaxed bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-3 space-y-1">
+            {detailLines.map((line, i) => (
+              <li key={i} className="whitespace-pre-wrap break-words">{line}</li>
+            ))}
+          </ul>
+          <details className="text-[10px]">
+            <summary className="cursor-pointer text-on-surface-variant hover:text-primary select-none">Raw payload</summary>
+            <pre className="font-mono-timestamp text-[10px] bg-surface-container-lowest border border-outline-variant p-3 rounded-DEFAULT overflow-x-auto text-on-surface-variant whitespace-pre-wrap mt-1">
+              {rawJson}
+            </pre>
+          </details>
+        </div>
       )}
     </div>
   );
@@ -238,7 +310,7 @@ export default function Explorer() {
                       {c.customer_ref}
                     </td>
                     <td className="py-3 px-4 text-right text-on-surface">
-                      ${c.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{c.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
                     <td className="py-3 px-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded font-label-caps text-label-caps font-bold capitalize ${
@@ -288,7 +360,7 @@ export default function Explorer() {
                 )}
 
                 {timeline.map((evt, idx) => (
-                  <TimelineNode key={idx} evt={evt} idx={idx} />
+                  <TimelineNode key={idx} evt={evt} />
                 ))}
               </div>
             </div>
