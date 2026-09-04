@@ -291,8 +291,12 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                         
         SANDBOX_SESSIONS[session_id]["done"] = True
     except Exception as e:
+        import traceback
         SANDBOX_SESSIONS[session_id]["done"] = True
         SANDBOX_SESSIONS[session_id]["error"] = True
+        SANDBOX_SESSIONS[session_id]["error_detail"] = f"{type(e).__name__}: {e}"
+        print(f"⚠️ Sandbox simulation error ({session_id}): {type(e).__name__}: {e}")
+        traceback.print_exc()
 
 
 @router.post("/run")
@@ -341,9 +345,18 @@ async def get_sandbox_status(session_id: str, session: AsyncSession = Depends(ge
             })
             
         events.sort(key=lambda x: x["timestamp"])
-        
+
+    if session_data.get("error") and session_data.get("error_detail"):
+        events.append({
+            "type": "error",
+            "event": "error",
+            "timestamp": time.time(),
+            "payload": {"message": session_data["error_detail"]}
+        })
+
     return {
         "events": events,
         "done": session_data["done"],
-        "error": session_data["error"]
+        "error": session_data["error"],
+        "error_detail": session_data.get("error_detail")
     }
