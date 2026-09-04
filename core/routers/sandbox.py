@@ -353,13 +353,23 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                     action = llm_resp.get("action", "undecided")
 
                     async with httpx.AsyncClient(timeout=60.0) as client:
-                        if action == "pay_now":
-                            await send_payment_captured(customer_ref, client)
-                            continue
-
+                        # Send whatever the persona actually said first -- on a
+                        # pay_now turn this is usually something like "Just paid
+                        # it!", and discarding it (as this used to do by
+                        # `continue`-ing before ever checking reply_text) meant
+                        # the customer's own reply never appeared in the chat,
+                        # even though it's what triggered the payment. Both
+                        # webhook endpoints process fully synchronously before
+                        # responding, so the reactive reply is guaranteed to be
+                        # committed before payment_captured runs and sets the
+                        # case to recovered as the final word.
                         if reply_text:
                             await send_whatsapp_webhook(customer_ref, reply_text, client)
                             replies_sent += 1
+
+                        if action == "pay_now":
+                            await send_payment_captured(customer_ref, client)
+                            continue
                 else:
                     rounds_stalled += 1
                     if rounds_stalled >= 3:
