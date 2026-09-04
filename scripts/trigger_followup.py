@@ -16,11 +16,13 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from core.models.cases import Case
 from core.models.replies import Reply
 from core.models.interventions import Intervention
+from core.models.diagnoses import Diagnosis
 from core.models.audit_events import AuditEvent
 from core.channels.mock import MockChannel
 from core.channels.whatsapp import WhatsAppChannel
 from core.config import settings
 from core.services.state_machine import draft_and_send_followup
+from core.services.intervention import HUMAN_CAUSES, render_template_message
 
 
 async def check_followup(case_id_str: str, force: bool, use_mock: bool = False):
@@ -107,8 +109,15 @@ async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, for
             
             print(f"📜 Sending fallback template outside 24h window...")
             template_used = "payment_reminder_followup_v1"
-            parameters = [str(case.currency), str(case.amount), str(case.customer_ref)]
-            sent_representation = f"[{template_used}] {parameters}"
+
+            diagnosis = await session.scalar(
+                select(Diagnosis).where(Diagnosis.case_id == case.id).order_by(Diagnosis.created_at.desc()).limit(1)
+            )
+            raw_cause = diagnosis.causes[0] if (diagnosis and diagnosis.causes) else "unknown"
+            human_cause = HUMAN_CAUSES.get(raw_cause, "an unknown error occurred")
+
+            parameters = [str(case.currency), str(case.amount), str(case.customer_ref), human_cause]
+            sent_representation = render_template_message(template_used, parameters)
 
             # Check stopping rules before sending
             try:
@@ -145,6 +154,7 @@ async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, for
                     "session_open": is_session_open,
                     "attempt_number": next_attempt,
                     "template_used": template_used,
+                    "message": sent_representation,
                 }
             )
             session.add(audit_event)

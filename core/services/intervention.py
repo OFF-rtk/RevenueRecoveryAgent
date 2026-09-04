@@ -22,6 +22,36 @@ log = structlog.get_logger(__name__)
 # Default channel for development
 default_channel = MockChannel()
 
+# Human-readable mapping for customer-facing templates and diagnosis causes.
+HUMAN_CAUSES = {
+    "insufficient_funds": "your card had insufficient funds",
+    "expired_card": "your card has expired",
+    "wrong_details": "your payment details were incorrect",
+    "bank_declined": "your bank declined the transaction",
+    "mandate_revoked": "your auto-pay mandate was revoked",
+    "technical_error": "a technical error occurred during processing",
+    "payment_forgotten": "your payment is overdue",
+    "dispute_raised": "a dispute was raised on this charge",
+    "wrong_invoice_details": "there was an issue with the invoice details",
+    "cash_flow_issue": "of an indicated cash flow issue",
+    "unknown": "an unknown error occurred",
+}
+
+
+def render_template_message(template_name: str, parameters: list[str]) -> str:
+    """
+    Render a human-readable version of a WhatsApp template for storage/display.
+    Params are always [currency, amount, customer_ref, human_cause].
+    """
+    if template_name == "payment_recovery_notice_v1":
+        return f"Hi, this is a message from Razorpay. Your payment of {parameters[0]} {parameters[1]} for your subscription ({parameters[2]}) failed because {parameters[3]}. Please pay here to continue using the service."
+    if template_name == "invoice_reminder_notice_v1":
+        return f"Hi, this is a reminder from Razorpay. Your invoice for {parameters[0]} {parameters[1]} (Ref: {parameters[2]}) is pending due to {parameters[3]}. Please complete your payment."
+    if template_name == "payment_reminder_followup_v1":
+        return f"Hi, we haven't heard back from you regarding your pending payment of {parameters[0]} {parameters[1]}. This is because {parameters[3]}. Please reply if you need any assistance, or pay here to resolve it."
+    return f"[{template_name}] {parameters}"
+
+
 async def draft_and_send_intervention(
     case_id: uuid.UUID,
     session: AsyncSession,
@@ -52,21 +82,6 @@ async def draft_and_send_intervention(
     else:
         template_name = "invoice_reminder_notice_v1"
 
-    # Human-readable mapping for customer-facing templates
-    HUMAN_CAUSES = {
-        "insufficient_funds": "your card had insufficient funds",
-        "expired_card": "your card has expired",
-        "wrong_details": "your payment details were incorrect",
-        "bank_declined": "your bank declined the transaction",
-        "mandate_revoked": "your auto-pay mandate was revoked",
-        "technical_error": "a technical error occurred during processing",
-        "payment_forgotten": "your payment is overdue",
-        "dispute_raised": "a dispute was raised on this charge",
-        "wrong_invoice_details": "there was an issue with the invoice details",
-        "cash_flow_issue": "of an indicated cash flow issue",
-        "unknown": "an unknown error occurred",
-    }
-    
     raw_cause = diagnosis.causes[0] if (diagnosis and diagnosis.causes) else "unknown"
     human_cause = HUMAN_CAUSES.get(raw_cause, "an unknown error occurred")
 
@@ -102,23 +117,18 @@ async def draft_and_send_intervention(
         button_parameters=button_parameters
     )
     
-    sent_representation = f"[{template_name}] {parameters}"
-    
-    # Save Intervention record
+    human_readable_message = render_template_message(template_name, parameters)
+
+    # Save Intervention record -- stores the human-readable text so every
+    # downstream consumer (sandbox chat, case explorer, persona simulator)
+    # sees a real message instead of the raw "[template_name] [params]" debug form.
     intervention = Intervention(
         case_id=case.id,
         channel=channel_response.get("channel", "unknown"),
-        message_sent=sent_representation,
+        message_sent=human_readable_message,
         attempt_number=1 # Hardcoded to 1 for now, we will handle multiple attempts in Phase 6
     )
     session.add(intervention)
-    
-    # Generate a human readable version of the template for the Audit log
-    human_readable_message = sent_representation
-    if template_name == "payment_recovery_notice_v1":
-        human_readable_message = f"Hi, this is a message from Razorpay. Your payment of {parameters[0]} {parameters[1]} for your subscription ({parameters[2]}) failed because {parameters[3]}. Please pay here to continue using the service."
-    elif template_name == "invoice_reminder_notice_v1":
-        human_readable_message = f"Hi, this is a reminder from Razorpay. Your invoice for {parameters[0]} {parameters[1]} (Ref: {parameters[2]}) is pending due to {parameters[3]}. Please complete your payment."
 
     # Save Audit Event
     audit_event = AuditEvent(

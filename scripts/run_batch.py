@@ -252,13 +252,17 @@ async def run_batch(count: int = 70, seed: int = 42, fresh: bool = False, fixtur
                         break
 
                     # Record follow-up intervention
+                    from core.services.intervention import HUMAN_CAUSES, render_template_message
+
                     followup_template = "payment_reminder_followup_v1"
-                    followup_params = [str(case.currency), str(case.amount), str(case.customer_ref)]
+                    raw_cause = diag.causes[0] if (diag and diag.causes) else "unknown"
+                    human_cause = HUMAN_CAUSES.get(raw_cause, "an unknown error occurred")
+                    followup_params = [str(case.currency), str(case.amount), str(case.customer_ref), human_cause]
                     await channel.send_template(to=case.customer_ref, template_name=followup_template, parameters=followup_params)
                     session.add(InterventionModel(
                         case_id=case.id,
                         channel="mock",
-                        message_sent=f"[{followup_template}] {followup_params}",
+                        message_sent=render_template_message(followup_template, followup_params),
                         attempt_number=round_num + 1,
                     ))
                     session.add(AuditEvent(

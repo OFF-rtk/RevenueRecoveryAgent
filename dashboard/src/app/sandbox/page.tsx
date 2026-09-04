@@ -2,6 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 
+// Short summaries of the actual persona prompts used server-side
+// (see scripts/run_live_persona_harness.py PERSONAS) -- keeps the config
+// panel honest about what each selection will actually do.
+const PERSONA_DESCRIPTIONS: Record<string, string> = {
+  considering_cancellation: "Genuinely on the fence about keeping the subscription -- may ask what they'd lose, or pause instead of paying. Outcome isn't scripted; it follows how the conversation actually goes.",
+  needs_payment_help: "Wants to pay, but the card on file is broken -- needs the agent to actually offer a fix (e.g. a UPI link), not just repeat \"please pay.\"",
+  accidental_failure: "Happy customer, payment failed by accident. Pays quickly once given a clear next step.",
+  suspicious_payer: "Doesn't recognize the charge -- asks for proof (invoice, signup date) before paying. Escalates to a human if the agent can't provide it.",
+  forgetful_promises_then_pays: "Willing to pay but busy -- promises to \"do it later\" on first contact, then may or may not follow through on a reminder.",
+  ignores_completely: "Never replies, under any circumstances. Tests the stopping-rules / timeout path.",
+};
+
 // Inline simplified TimelineNode for Sandbox audit
 function AuditNode({ evt }: { evt: any }) {
   const [expanded, setExpanded] = useState(false);
@@ -33,6 +45,12 @@ function AuditNode({ evt }: { evt: any }) {
     badge = "Error"; title = "Simulation Error";
     colorClass = "bg-error-container border-error text-on-error-container";
     iconClass = "bg-error-container border-error";
+  } else if (evt.type === "manual_followup_check_triggered") {
+    badge = "Follow-up"; title = "Automated Nudge Sent";
+    colorClass = "bg-primary-fixed border-primary text-on-primary-fixed";
+    iconClass = "bg-primary-fixed border-primary";
+  } else if (evt.type === "case_created") {
+    badge = "Case"; title = "Case Created";
   }
 
   return (
@@ -179,9 +197,9 @@ export default function Sandbox() {
             </button>
           </form>
           <div className="mt-6 text-center">
-            <a href="https://github.com/example/repo" target="_blank" className="text-primary text-sm hover:underline">
-              Don't have the access key?
-            </a>
+            <p className="text-on-surface-variant text-sm">
+              Don't have the access key? Ask the team.
+            </p>
           </div>
         </div>
       </div>
@@ -189,7 +207,7 @@ export default function Sandbox() {
   }
 
   // Filter messages for chat view
-  const chatMessages = events.filter(e => e.type === "intervention_sent" || e.type === "followup_sent" || e.type === "customer_reply");
+  const chatMessages = events.filter(e => e.type === "intervention_sent" || e.type === "followup_sent" || e.type === "customer_reply" || e.type === "manual_followup_check_triggered");
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface">
@@ -203,6 +221,11 @@ export default function Sandbox() {
             <option value="failed_subscription">Failed Subscription</option>
             <option value="overdue_invoice">Overdue Invoice</option>
           </select>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-tight">
+            {caseType === "overdue_invoice"
+              ? "Fires an invoice.expired event -- the agent uses its overdue-invoice template, not the subscription one."
+              : "Fires a payment.failed event -- the agent uses its subscription recovery template."}
+          </p>
         </div>
 
         <div className="mb-4">
@@ -222,7 +245,12 @@ export default function Sandbox() {
             <option value="needs_payment_help">Needs Payment Help</option>
             <option value="accidental_failure">Accidental Failure</option>
             <option value="suspicious_payer">Suspicious Payer</option>
+            <option value="forgetful_promises_then_pays">Forgetful (Promises, Then Pays)</option>
+            <option value="ignores_completely">Ignores Completely</option>
           </select>
+          <p className="text-[10px] text-on-surface-variant mt-2 leading-tight">
+            {PERSONA_DESCRIPTIONS[persona]}
+          </p>
         </div>
 
         <button 
@@ -265,7 +293,7 @@ export default function Sandbox() {
           )}
           
           {chatMessages.map((msg, i) => {
-            const isAgent = msg.type === "intervention_sent" || msg.type === "followup_sent";
+            const isAgent = msg.type === "intervention_sent" || msg.type === "followup_sent" || msg.type === "manual_followup_check_triggered";
             return (
               <div key={i} className={`flex ${isAgent ? 'justify-start' : 'justify-end'}`}>
                 <div className={`max-w-[70%] p-3 rounded-lg shadow-sm ${isAgent ? 'bg-white rounded-tl-none' : 'bg-[#d9fdd3] rounded-tr-none'}`}>

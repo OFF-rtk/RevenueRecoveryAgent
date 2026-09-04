@@ -134,32 +134,60 @@ def generate_razorpay_signature(payload_bytes: bytes, secret: str) -> str:
 def generate_whatsapp_signature(payload_bytes: bytes, secret: str) -> str:
     return "sha256=" + hmac.new(secret.encode("utf-8"), payload_bytes, hashlib.sha256).hexdigest()
 
-async def send_razorpay_webhook(phone: str, root_cause: str, client: httpx.AsyncClient):
-    payload_dict = {
-        "entity": "event",
-        "account_id": "acc_1234567890",
-        "event": "payment.failed",
-        "contains": ["payment"],
-        "payload": {
-            "payment": {
-                "entity": {
-                    "id": f"pay_{int(time.time())}_{phone[-4:]}",
-                    "amount": 99900,
-                    "currency": "INR",
-                    "status": "failed",
-                    "method": "card",
-                    "description": "Razorpay Premium Annual Subscription",
-                    "error_code": "BAD_REQUEST_ERROR",
-                    "error_description": f"Payment failed due to {root_cause}",
-                    "error_source": "bank",
-                    "error_reason": root_cause,
-                    "contact": phone,
-                    "notes": {"customer_ref": phone}
+async def send_razorpay_webhook(phone: str, root_cause: str, case_type: str, client: httpx.AsyncClient):
+    # case_type drives which Razorpay event we fire -- these map to different
+    # case_type values in the app (see core/webhooks/razorpay.py SUPPORTED_EVENTS),
+    # which in turn selects a different message template and audit trail.
+    if case_type == "overdue_invoice":
+        payload_dict = {
+            "entity": "event",
+            "account_id": "acc_1234567890",
+            "event": "invoice.expired",
+            "contains": ["invoice"],
+            "payload": {
+                "invoice": {
+                    "entity": {
+                        "id": f"inv_{int(time.time())}_{phone[-4:]}",
+                        "amount": 499900,
+                        "amount_due": 499900,
+                        "currency": "INR",
+                        "status": "expired",
+                        "description": "Overdue Invoice - Business Services",
+                        "error_description": f"Invoice payment overdue: {root_cause}",
+                        "error_reason": root_cause,
+                        "contact": phone,
+                        "notes": {"customer_ref": phone}
+                    }
                 }
-            }
-        },
-        "created_at": int(time.time())
-    }
+            },
+            "created_at": int(time.time())
+        }
+    else:
+        payload_dict = {
+            "entity": "event",
+            "account_id": "acc_1234567890",
+            "event": "payment.failed",
+            "contains": ["payment"],
+            "payload": {
+                "payment": {
+                    "entity": {
+                        "id": f"pay_{int(time.time())}_{phone[-4:]}",
+                        "amount": 99900,
+                        "currency": "INR",
+                        "status": "failed",
+                        "method": "card",
+                        "description": "Razorpay Premium Annual Subscription",
+                        "error_code": "BAD_REQUEST_ERROR",
+                        "error_description": f"Payment failed due to {root_cause}",
+                        "error_source": "bank",
+                        "error_reason": root_cause,
+                        "contact": phone,
+                        "notes": {"customer_ref": phone}
+                    }
+                }
+            },
+            "created_at": int(time.time())
+        }
     payload_bytes = json.dumps(payload_dict, separators=(",", ":")).encode("utf-8")
     signature = generate_razorpay_signature(payload_bytes, RAZORPAY_WEBHOOK_SECRET)
     headers = {"Content-Type": "application/json", "X-Razorpay-Signature": signature}
@@ -226,8 +254,8 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
     
     try:
         # Trigger webhook
-        async with httpx.AsyncClient(timeout=600.0) as client:
-            await send_razorpay_webhook(customer_ref, req.root_cause, client)
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            await send_razorpay_webhook(customer_ref, req.root_cause, req.case_type, client)
             
         async_session = async_session_factory()
         
@@ -274,7 +302,7 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                     reply_text = llm_resp.get("reply_text", "").strip()
                     action = llm_resp.get("action", "undecided")
                     
-                    async with httpx.AsyncClient(timeout=600.0) as client:
+                    async with httpx.AsyncClient(timeout=60.0) as client:
                         if action == "pay_now":
                             await send_payment_captured(customer_ref, client)
                             continue
