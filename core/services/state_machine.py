@@ -134,6 +134,7 @@ async def process_inbound_reply(
         }
     )
     session.add(audit_reply)
+    await session.flush()
     
     # 5. Deterministic State Machine Transition
     old_status = case.status
@@ -229,7 +230,7 @@ async def process_inbound_reply(
     # 7. Check stopping rules again, in case this state change or follow-up
     # triggers a stop condition (like max interventions).
     try:
-        await check_stopping_rules(case, session)
+        await check_stopping_rules(case, session, action_type="follow_up")
     except StoppingRuleError as exc:
         audit = AuditEvent(
             case_id=case.id,

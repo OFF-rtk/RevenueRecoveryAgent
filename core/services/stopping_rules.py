@@ -83,12 +83,15 @@ async def check_opt_out(case: Case, session: AsyncSession) -> None:
         )
 
 
-async def check_max_retries(case: Case, session: AsyncSession) -> None:
+async def check_max_retries(case: Case, session: AsyncSession, action_type: str = "retry") -> None:
     """
     Rule 2: Max-retry cap (hard cap = MAX_RETRIES).
     Counts existing Intervention rows. If already at or above the cap,
     escalates the case and raises StoppingRuleError.
+    Skips this check for active conversations (action_type='follow_up').
     """
+    if action_type == "follow_up":
+        return
     count = await session.scalar(
         select(func.count()).where(Intervention.case_id == case.id)
     )
@@ -227,6 +230,6 @@ async def check_stopping_rules(
                      state-machine follow-ups (skips no-blind-retry check).
     """
     await check_opt_out(case, session)
-    await check_max_retries(case, session)
+    await check_max_retries(case, session, action_type)
     await check_no_blind_retry(case, session, causes, action_type)
     await check_dispute_raised(case, session, causes)

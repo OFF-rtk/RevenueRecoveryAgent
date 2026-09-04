@@ -259,6 +259,15 @@ async def run_harness(count: int, persona_filter: str = None):
     personas_to_assign = []
     if persona_filter:
         personas_to_assign = [persona_filter] * count
+    elif count == 50:
+        personas_to_assign = (
+            ["considering_cancellation"] * 13 +
+            ["needs_payment_help"] * 10 +
+            ["accidental_failure"] * 8 +
+            ["forgetful_promises_then_pays"] * 7 +
+            ["ignores_completely"] * 6 +
+            ["suspicious_payer"] * 6
+        )
     elif count == 28:
         personas_to_assign = (
             ["accidental_failure"] * 5 +
@@ -346,91 +355,103 @@ async def run_harness(count: int, persona_filter: str = None):
             
         async with async_session() as session:
             for c in active_cases:
-                # Find the Case row for this phone number
-                case_row = await session.scalar(
-                    select(Case).where(Case.customer_ref == c["phone"]).order_by(desc(Case.created_at)).limit(1)
-                )
-                if not case_row:
-                    continue
-                    
-                # Get latest Intervention
-                intervention = await session.scalar(
-                    select(Intervention).where(Intervention.case_id == case_row.id).order_by(desc(Intervention.sent_at)).limit(1)
-                )
-                
-                needs_followup_push = False
-                
-                # Check if we have an unseen intervention
-                has_unseen_intervention = intervention and str(intervention.id) not in c["seen_interventions"]
-                
-                # If the DB state is terminal, AND there are no unseen messages for the persona to reply to, we are fully done.
-                if case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout") and not has_unseen_intervention:
-                    c["status"] = "resolved"
-                    c["outcome"] = case_row.status
-                    print(f"🏁 Case {c['phone']} reached terminal DB state: {case_row.status} (Conversation concluded)")
-                    continue
-
-                if has_unseen_intervention:
-                    # New message from the agent!
-                    c["seen_interventions"].append(str(intervention.id))
-                    agent_text = intervention.message_sent
-                    print(f"🤖 Agent -> {c['phone']}: {agent_text}")
-                    
-                    max_replies = 12 if c["persona"] == "considering_cancellation" else 10
-                    if c["replies_sent"] >= max_replies:
-                        print(f"🛑 Max replies reached for {c['phone']}. Stalling.")
-                        c["status"] = "stalled"
-                        continue
-                        
-                    # Persona LLM responds
-                    start_time = time.time()
-                    llm_resp = await get_persona_reply(
-                        c["persona"], 
-                        c["conversation_summary"], 
-                        agent_text,
-                        temperature=c["temperature"]
+                try:
+                    # Find the Case row for this phone number
+                    case_row = await session.scalar(
+                        select(Case).where(Case.customer_ref == c["phone"]).order_by(desc(Case.created_at)).limit(1)
                     )
-                    latency = time.time() - start_time
-                    
-                    c["conversation_summary"] = llm_resp.get("conversation_summary", c["conversation_summary"])
-                    
-                    print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('internal_reasoning')} ({latency:.2f}s)")
-                    reply_text = llm_resp.get("reply_text", "").strip()
-                    action = llm_resp.get("action", "undecided")
-                      
-                    if action == "pay_now":
-                        print(f"💰 Persona {c['phone']} decided to PAY!")
-                        # Send webhook so the backend state machine flips it to recovered
-                        async with httpx.AsyncClient(timeout=600.0) as client:
-                            await send_payment_captured(c["phone"], client)
+                    if not case_row:
                         continue
+                    
+                    # Get latest Intervention
+                    intervention = await session.scalar(
+                        select(Intervention).where(Intervention.case_id == case_row.id).order_by(desc(Intervention.sent_at)).limit(1)
+                    )
+                
+                    needs_followup_push = False
+                
+                    # Check if we have an unseen intervention
+                    has_unseen_intervention = intervention and str(intervention.id) not in c["seen_interventions"]
+                
+                    # If the DB state is terminal, AND there are no unseen messages for the persona to reply to, we are fully done.
+                    if case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout") and not has_unseen_intervention:
+                        c["status"] = "resolved"
+                        c["outcome"] = case_row.status
+                        print(f"🏁 Case {c['phone']} reached terminal DB state: {case_row.status} (Conversation concluded)")
+                        continue
+
+                    if has_unseen_intervention:
+                        # New message from the agent!
+                        c["seen_interventions"].append(str(intervention.id))
+                        agent_text = intervention.message_sent
+                        print(f"🤖 Agent -> {c['phone']}: {agent_text}")
                         
-                    elif action == "pause_subscription":
-                        print(f"⏸️ Persona {c['phone']} decided to PAUSE!")
-                        # The text they generated will be sent to the agent and the agent will classify it as 'paused'.
+                        max_replies = 12 if c["persona"] == "considering_cancellation" else 10
+                        if c["replies_sent"] >= max_replies:
+                            print(f"🛑 Max replies reached for {c['phone']}. Stalling.")
+                            c["status"] = "stalled"
+                            continue
+                            
+                        # Persona LLM responds
+                        start_time = time.time()
+                        llm_resp = await get_persona_reply(
+                            c["persona"], 
+                            c["conversation_summary"], 
+                            agent_text,
+                            temperature=c["temperature"]
+                        )
+                        latency = time.time() - start_time
                         
-                    elif action == "cancel":
-                        print(f"❌ Persona {c['phone']} decided to CANCEL!")
-                        # Text sent to agent will be classified as 'opt_out' -> stopped.
+                        c["conversation_summary"] = llm_resp.get("conversation_summary", c["conversation_summary"])
                         
-                    if reply_text:
-                        c["replies_sent"] += 1
-                        print(f"📱 Persona -> Agent: {reply_text}")
-                        async with httpx.AsyncClient(timeout=600.0) as client:
-                            await send_whatsapp_webhook(c["phone"], reply_text, client)
+                        print(f"👤 Persona ({c['persona']}) thought: {llm_resp.get('internal_reasoning')} ({latency:.2f}s)")
+                        reply_text = llm_resp.get("reply_text", "").strip()
+                        action = llm_resp.get("action", "undecided")
+                          
+                        if action == "pay_now":
+                            print(f"💰 Persona {c['phone']} decided to PAY!")
+                            # Send webhook so the backend state machine flips it to recovered
+                            async with httpx.AsyncClient(timeout=600.0) as client:
+                                await send_payment_captured(c["phone"], client)
+                            continue
+                            
+                        elif action == "pause_subscription":
+                            print(f"⏸️ Persona {c['phone']} decided to PAUSE!")
+                            # The text they generated will be sent to the agent and the agent will classify it as 'paused'.
+                            
+                        elif action == "cancel":
+                            print(f"❌ Persona {c['phone']} decided to CANCEL!")
+                            # Text sent to agent will be classified as 'opt_out' -> stopped.
+                            
+                        if reply_text:
+                            c["replies_sent"] += 1
+                            print(f"📱 Persona -> Agent: {reply_text}")
+                            async with httpx.AsyncClient(timeout=600.0) as client:
+                                await send_whatsapp_webhook(c["phone"], reply_text, client)
+                        else:
+                            print(f"🔕 Persona chose to ignore.")
+                            needs_followup_push = True
+                            
                     else:
-                        print(f"🔕 Persona chose to ignore.")
+                        # No new intervention. The app is waiting. We should trigger a follow up!
                         needs_followup_push = True
                         
-                else:
-                    # No new intervention. The app is waiting. We should trigger a follow up!
-                    needs_followup_push = True
+                    if needs_followup_push:
+                        # Randomly decide to force a follow-up to advance the stale case
+                        if random.random() < 0.5:
+                            print(f"⏩ Forcing manual follow-up for {c['phone']} to advance time...")
+                            await check_followup(str(case_row.id), force=True)
+                
+                except Exception as e:
+                    print(f"⚠️ Unhandled error for case {c['phone']}: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    c["status"] = "stalled"
+                    c["outcome"] = "error"
                     
-                if needs_followup_push and c["persona"] != "ignores_completely":
-                    # Randomly decide to force a follow-up to advance the stale case
-                    if random.random() < 0.5:
-                        print(f"⏩ Forcing manual follow-up for {c['phone']} to advance time...")
-                        await check_followup(str(case_row.id), force=True)
+            # Incremental save per round
+            with open(state_file, "w") as f:
+                json.dump(cases, f, indent=2)
                         
         print("⏳ Waiting 10 seconds for app to respond...")
         await asyncio.sleep(10)
@@ -449,15 +470,35 @@ async def run_harness(count: int, persona_filter: str = None):
                 c["status"] = "resolved"
 
     print("\n📊 Generating Report...")
+    total = len(cases)
+    
+    def calc_pct(c_list, condition):
+        if not c_list: return "0.0%"
+        return f"{(sum(1 for c in c_list if condition(c)) / len(c_list)) * 100:.1f}%"
+        
     report = {
         "summary": {
-            "total_cases": len(cases),
-            "recovered_cases": sum(1 for c in cases if c["outcome"] == "recovered"),
-            "retained_paused_cases": sum(1 for c in cases if c["outcome"] == "retained_paused"),
-            "timeout_cases": sum(1 for c in cases if c["outcome"] == "timeout"),
-            "lost_cases": sum(1 for c in cases if c["outcome"] == "stopped"),
-            "recovery_rate": f"{(sum(1 for c in cases if c['outcome'] == 'recovered') / len(cases)) * 100:.1f}%",
-            "retention_rate": f"{((sum(1 for c in cases if c['outcome'] in ['recovered', 'retained_paused'])) / len(cases)) * 100:.1f}%",
+            "total_cases": total,
+            "outcomes": {
+                "recovered": sum(1 for c in cases if c["outcome"] == "recovered"),
+                "retained_paused": sum(1 for c in cases if c["outcome"] == "retained_paused"),
+                "human_escalated": sum(1 for c in cases if c["outcome"] == "human_escalated"),
+                "stopped": sum(1 for c in cases if c["outcome"] == "stopped"),
+                "timeout": sum(1 for c in cases if c["outcome"] == "timeout"),
+                "error": sum(1 for c in cases if c["outcome"] == "error")
+            },
+            "percentages": {
+                "recovered": calc_pct(cases, lambda c: c["outcome"] == "recovered"),
+                "retained_paused": calc_pct(cases, lambda c: c["outcome"] == "retained_paused"),
+                "human_escalated": calc_pct(cases, lambda c: c["outcome"] == "human_escalated"),
+                "stopped": calc_pct(cases, lambda c: c["outcome"] == "stopped"),
+                "timeout": calc_pct(cases, lambda c: c["outcome"] == "timeout"),
+                "error": calc_pct(cases, lambda c: c["outcome"] == "error")
+            },
+            "kpis": {
+                "recovery_rate": calc_pct(cases, lambda c: c["outcome"] == "recovered"),
+                "retention_rate": calc_pct(cases, lambda c: c["outcome"] in ["recovered", "retained_paused"])
+            }
         },
         "by_persona": {},
         "cases_data": cases,
@@ -468,19 +509,29 @@ async def run_harness(count: int, persona_filter: str = None):
         p_cases = [c for c in cases if c["persona"] == p_type]
         if not p_cases:
             continue
-        p_recovered = sum(1 for c in p_cases if c["outcome"] == "recovered")
-        p_retained = sum(1 for c in p_cases if c["outcome"] == "retained_paused")
-        p_timeout = sum(1 for c in p_cases if c["outcome"] == "timeout")
-        p_lost = sum(1 for c in p_cases if c["outcome"] == "stopped")
-        
+            
         report["by_persona"][p_type] = {
             "total": len(p_cases),
-            "recovered": p_recovered,
-            "retained_paused": p_retained,
-            "timeout": p_timeout,
-            "lost": p_lost,
-            "recovery_rate": f"{(p_recovered / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%",
-            "retention_rate": f"{((p_recovered + p_retained) / len(p_cases)) * 100:.1f}%" if len(p_cases) > 0 else "0%"
+            "outcomes": {
+                "recovered": sum(1 for c in p_cases if c["outcome"] == "recovered"),
+                "retained_paused": sum(1 for c in p_cases if c["outcome"] == "retained_paused"),
+                "human_escalated": sum(1 for c in p_cases if c["outcome"] == "human_escalated"),
+                "stopped": sum(1 for c in p_cases if c["outcome"] == "stopped"),
+                "timeout": sum(1 for c in p_cases if c["outcome"] == "timeout"),
+                "error": sum(1 for c in p_cases if c["outcome"] == "error")
+            },
+            "percentages": {
+                "recovered": calc_pct(p_cases, lambda c: c["outcome"] == "recovered"),
+                "retained_paused": calc_pct(p_cases, lambda c: c["outcome"] == "retained_paused"),
+                "human_escalated": calc_pct(p_cases, lambda c: c["outcome"] == "human_escalated"),
+                "stopped": calc_pct(p_cases, lambda c: c["outcome"] == "stopped"),
+                "timeout": calc_pct(p_cases, lambda c: c["outcome"] == "timeout"),
+                "error": calc_pct(p_cases, lambda c: c["outcome"] == "error")
+            },
+            "kpis": {
+                "recovery_rate": calc_pct(p_cases, lambda c: c["outcome"] == "recovered"),
+                "retention_rate": calc_pct(p_cases, lambda c: c["outcome"] in ["recovered", "retained_paused"])
+            }
         }
         
     report_path = Path("reports/live_persona_report.json")

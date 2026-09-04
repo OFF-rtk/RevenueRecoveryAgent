@@ -224,15 +224,23 @@ export default function Dashboard() {
                     Simulated Recovery Rate
                   </span>
                   <span className="font-data-tabular text-data-tabular text-on-surface font-semibold">
-                    {summary?.overall_recovery_rate || 0}%
+                    {summary?.sim_recovery_rate || "0.0%"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
                   <span className="font-data-tabular text-data-tabular text-on-surface-variant">
-                    Avg. Interaction Turns
+                    Simulated Retention Rate
                   </span>
                   <span className="font-data-tabular text-data-tabular text-on-surface font-semibold">
-                    {summary?.avg_interaction_turns || 0}
+                    {summary?.sim_retention_rate || "0.0%"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-outline-variant border-dashed">
+                  <span className="font-data-tabular text-data-tabular text-on-surface-variant">
+                    Avg. Interventions
+                  </span>
+                  <span className="font-data-tabular text-data-tabular text-on-surface font-semibold">
+                    {summary?.sim_avg_interventions || 0}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -257,7 +265,7 @@ export default function Dashboard() {
             <table className="w-full text-left border-collapse">
               <thead className="bg-surface-container-low border-b border-outline-variant">
                 <tr>
-                  <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant w-1/3">
+                  <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant w-1/4">
                     Persona Profile
                   </th>
                   <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
@@ -267,39 +275,46 @@ export default function Dashboard() {
                     Recovered
                   </th>
                   <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
-                    Success Rate
+                    Retained
+                  </th>
+                  <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                    Escalated
+                  </th>
+                  <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                    Timeout
+                  </th>
+                  <th className="py-3 px-4 font-label-caps text-label-caps text-on-surface-variant text-right">
+                    Stopped
                   </th>
                 </tr>
               </thead>
               <tbody className="font-data-tabular text-data-tabular divide-y divide-outline-variant">
                 {personas.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-4 px-4 text-center text-on-surface-variant font-body-sm text-body-sm">
+                    <td colSpan={7} className="py-4 px-4 text-center text-on-surface-variant font-body-sm text-body-sm">
                       No persona data available. Run the harness first.
                     </td>
                   </tr>
                 ) : (
-                  personas.map((p, idx) => (
-                    <tr key={idx} className="hover:bg-surface-variant transition-colors group">
-                      <td className="py-3 px-4 text-on-surface flex items-center gap-2 capitalize">
-                        <span className={`w-2 h-2 rounded-full ${
-                          p.success_rate >= 80 ? 'bg-emerald-600' : p.success_rate >= 50 ? 'bg-amber-500' : 'bg-red-500'
-                        }`}></span>
-                        {p.persona.replace(/_/g, ' ')}
-                      </td>
-                      <td className="py-3 px-4 text-right text-on-surface-variant">
-                        {p.attempted}
-                      </td>
-                      <td className="py-3 px-4 text-right text-on-surface">{p.recovered}</td>
-                      <td className="py-3 px-4 text-right">
-                        <span className={`px-2 py-1 rounded font-mono-timestamp text-mono-timestamp ${
-                          p.success_rate >= 80 ? 'bg-emerald-100 text-emerald-800' : p.success_rate >= 50 ? 'bg-surface-container text-on-surface' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {p.success_rate}%
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                  personas.map((p, idx) => {
+                    const successRateNum = parseFloat(p.success_rate);
+                    return (
+                      <tr key={idx} className="hover:bg-surface-variant transition-colors group">
+                        <td className="py-3 px-4 text-on-surface flex items-center gap-2 capitalize">
+                          <span className={`w-2 h-2 rounded-full ${
+                            successRateNum >= 80 ? 'bg-emerald-600' : successRateNum >= 50 ? 'bg-amber-500' : 'bg-red-500'
+                          }`}></span>
+                          {p.persona.replace(/_/g, ' ')}
+                        </td>
+                        <td className="py-3 px-4 text-right text-on-surface-variant">{p.attempted}</td>
+                        <td className="py-3 px-4 text-right text-on-surface">{p.recovered}</td>
+                        <td className="py-3 px-4 text-right text-on-surface">{p.retained_paused}</td>
+                        <td className="py-3 px-4 text-right text-on-surface">{p.human_escalated}</td>
+                        <td className="py-3 px-4 text-right text-on-surface">{p.timeout}</td>
+                        <td className="py-3 px-4 text-right text-on-surface">{p.stopped}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

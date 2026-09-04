@@ -13,7 +13,7 @@ State Definitions:
 - needs_new_payment_method: The customer explicitly mentions they need to update their card/bank details, or their card is blocked/lost.
 - disputed: The customer denies owing the money, claims they already paid, or expresses anger/confusion about the charge.
 - opt_out: The customer explicitly demands no further contact (e.g. "stop texting me", "unsubscribe") OR explicitly states they want to cancel their subscription and not pay. (Note: Refusing to pay because they want proof or have a question is NOT an opt-out. Use human_escalation for that).
-- paused: The customer explicitly asks to pause their subscription, or agrees to the 1-month pause offer.
+- paused: The customer explicitly CONFIRMS they want to pause their subscription. If they are just asking if a pause is possible or asking for more information about pausing, classify as unresolved.
 - human_escalation: The customer asks for information you don't have (like signup date, exact product name, or receipt) or requests human support. If you are flagging the message for the support team, you MUST use this state!
 - unresolved: The customer asks a general question, gives an unclear answer, or any other response not fitting above. Do NOT use this if they are asking for account specifics.
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Text, text
@@ -32,5 +32,8 @@ class AuditEvent(UUIDPrimaryKeyMixin, Base):
         JSONB, nullable=False, server_default=text("'{}'::jsonb")
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=text("NOW()"), nullable=False
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc),
+        server_default=text("NOW()"), 
+        nullable=False
     )

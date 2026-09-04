@@ -17,23 +17,33 @@ function TimelineNode({ evt, idx }: { evt: any; idx: number }) {
     title = "Audit Event: " + evt.event.replace(/_/g, ' ');
     displayDetail = evt.payload ? JSON.stringify(evt.payload, null, 2) : "";
     isJson = true;
-  } else if (evt.type === "transition") {
+  } else if (evt.type === "state_transition") {
     badge = "State";
-    title = `Transition: ${evt.to}`;
-    displayDetail = evt.reason || "";
+    title = `Transition: ${evt.payload?.new_status || evt.to}`;
+    displayDetail = evt.payload?.reason || evt.reason || "";
     colorClass = "bg-secondary-container border-secondary text-on-secondary-container";
     iconClass = "bg-secondary-container border-secondary";
-  } else if (evt.type === "intervention") {
+  } else if (evt.type === "intervention_sent" || evt.type === "followup_sent") {
     badge = "Agent";
-    title = "Intervention Sent";
-    displayDetail = evt.message;
+    title = evt.type === "followup_sent" ? "Follow-up Sent" : "Intervention Sent";
+    displayDetail = evt.payload?.message || evt.message;
     colorClass = "bg-primary-fixed border-primary text-on-primary-fixed";
     iconClass = "bg-primary-fixed border-primary";
-  } else if (evt.type === "reply") {
+  } else if (evt.type === "customer_reply") {
     badge = "Customer";
     title = "Reply Received";
-    displayDetail = evt.message;
+    displayDetail = evt.payload?.message || evt.message;
     colorClass = "bg-surface-container-high border-outline-variant text-on-surface";
+  } else if (evt.type === "diagnosis_completed") {
+    badge = "Diagnosis";
+    const conf = evt.payload?.confidence;
+    const confStr = typeof conf === 'number' ? conf.toFixed(2) : conf;
+    const tier = evt.payload?.tier;
+    const causes = evt.payload?.causes || [];
+    title = `Diagnosed: ${causes[0] || "unknown"} (tier ${tier}, conf ${confStr})`;
+    displayDetail = evt.payload?.reasoning || "";
+    colorClass = "bg-tertiary-container border-tertiary text-on-tertiary-container";
+    iconClass = "bg-tertiary-container border-tertiary";
   }
 
   // Pre-process any other JSON strings
