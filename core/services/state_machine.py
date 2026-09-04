@@ -238,5 +238,34 @@ async def process_inbound_reply(
             payload={"reason": str(exc)}
         )
         session.add(audit)
+
+        # The message the customer just received (drafted above, before this
+        # check ran) reads as a completely normal "we'll wait for your
+        # payment" -- with nothing further sent, escalation happens silently
+        # from their side of the conversation. Give it an actual handoff
+        # message instead of just going quiet.
+        if exc.rule == "max_broken_promises":
+            handoff_message = (
+                "It looks like this payment has been pending for a while now. "
+                "I've looped in one of our support specialists who'll reach out "
+                "to help get this sorted directly."
+            )
+            channel_response = await channel.send(to=case.customer_ref, message=handoff_message)
+
+            next_attempt = (await session.scalar(
+                select(func.max(Intervention.attempt_number)).where(Intervention.case_id == case.id)
+            ) or 0) + 1
+            session.add(Intervention(
+                case_id=case.id,
+                channel=channel_response.get("channel", "unknown") if isinstance(channel_response, dict) else "unknown",
+                message_sent=handoff_message,
+                attempt_number=next_attempt,
+            ))
+            session.add(AuditEvent(
+                case_id=case.id,
+                event_type="followup_sent",
+                payload={"channel": channel.name, "message": handoff_message},
+            ))
+
         await session.commit()
         log.info("case_stopped", case_id=str(case.id), reason=str(exc))
