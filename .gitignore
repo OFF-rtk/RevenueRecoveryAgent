@@ -81,3 +81,8 @@ logs/
 # Batch reports — generated output, not source
 reports/*.json
 reports/*.md
+
+# Scratch files
+scratch_*
+clear_db.py
+
