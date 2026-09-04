@@ -1,0 +1,828 @@
+{
+  "summary": {
+    "total_cases": 50,
+    "outcomes": {
+      "recovered": 25,
+      "retained_paused": 12,
+      "human_escalated": 4,
+      "stopped": 0,
+      "timeout": 9,
+      "error": 0
+    },
+    "percentages": {
+      "recovered": "50.0%",
+      "retained_paused": "24.0%",
+      "human_escalated": "8.0%",
+      "stopped": "0.0%",
+      "timeout": "18.0%",
+      "error": "0.0%"
+    },
+    "kpis": {
+      "recovery_rate": "50.0%",
+      "retention_rate": "74.0%"
+    }
+  },
+  "by_persona": {
+    "accidental_failure": {
+      "total": 8,
+      "outcomes": {
+        "recovered": 8,
+        "retained_paused": 0,
+        "human_escalated": 0,
+        "stopped": 0,
+        "timeout": 0,
+        "error": 0
+      },
+      "percentages": {
+        "recovered": "100.0%",
+        "retained_paused": "0.0%",
+        "human_escalated": "0.0%",
+        "stopped": "0.0%",
+        "timeout": "0.0%",
+        "error": "0.0%"
+      },
+      "kpis": {
+        "recovery_rate": "100.0%",
+        "retention_rate": "100.0%"
+      }
+    },
+    "suspicious_payer": {
+      "total": 6,
+      "outcomes": {
+        "recovered": 0,
+        "retained_paused": 0,
+        "human_escalated": 4,
+        "stopped": 0,
+        "timeout": 2,
+        "error": 0
+      },
+      "percentages": {
+        "recovered": "0.0%",
+        "retained_paused": "0.0%",
+        "human_escalated": "66.7%",
+        "stopped": "0.0%",
+        "timeout": "33.3%",
+        "error": "0.0%"
+      },
+      "kpis": {
+        "recovery_rate": "0.0%",
+        "retention_rate": "0.0%"
+      }
+    },
+    "needs_payment_help": {
+      "total": 10,
+      "outcomes": {
+        "recovered": 10,
+        "retained_paused": 0,
+        "human_escalated": 0,
+        "stopped": 0,
+        "timeout": 0,
+        "error": 0
+      },
+      "percentages": {
+        "recovered": "100.0%",
+        "retained_paused": "0.0%",
+        "human_escalated": "0.0%",
+        "stopped": "0.0%",
+        "timeout": "0.0%",
+        "error": "0.0%"
+      },
+      "kpis": {
+        "recovery_rate": "100.0%",
+        "retention_rate": "100.0%"
+      }
+    },
+    "considering_cancellation": {
+      "total": 13,
+      "outcomes": {
+        "recovered": 0,
+        "retained_paused": 12,
+        "human_escalated": 0,
+        "stopped": 0,
+        "timeout": 1,
+        "error": 0
+      },
+      "percentages": {
+        "recovered": "0.0%",
+        "retained_paused": "92.3%",
+        "human_escalated": "0.0%",
+        "stopped": "0.0%",
+        "timeout": "7.7%",
+        "error": "0.0%"
+      },
+      "kpis": {
+        "recovery_rate": "0.0%",
+        "retention_rate": "92.3%"
+      }
+    },
+    "ignores_completely": {
+      "total": 6,
+      "outcomes": {
+        "recovered": 0,
+        "retained_paused": 0,
+        "human_escalated": 0,
+        "stopped": 0,
+        "timeout": 6,
+        "error": 0
+      },
+      "percentages": {
+        "recovered": "0.0%",
+        "retained_paused": "0.0%",
+        "human_escalated": "0.0%",
+        "stopped": "0.0%",
+        "timeout": "100.0%",
+        "error": "0.0%"
+      },
+      "kpis": {
+        "recovery_rate": "0.0%",
+        "retention_rate": "0.0%"
+      }
+    },
+    "forgetful_promises_then_pays": {
+      "total": 7,
+      "outcomes": {
+        "recovered": 7,
+        "retained_paused": 0,
+        "human_escalated": 0,
+        "stopped": 0,
+        "timeout": 0,
+        "error": 0
+      },
+      "percentages": {
+        "recovered": "100.0%",
+        "retained_paused": "0.0%",
+        "human_escalated": "0.0%",
+        "stopped": "0.0%",
+        "timeout": "0.0%",
+        "error": "0.0%"
+      },
+      "kpis": {
+        "recovery_rate": "100.0%",
+        "retention_rate": "100.0%"
+      }
+    }
+  },
+  "cases_data": [
+    {
+      "phone": "919000000471",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.81,
+      "seen_interventions": [
+        "a19c7b56-99cf-479e-bc73-49f898c0b4c5"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 for transaction ID 919000000471 due to insufficient funds. Customer responded thanking the agent, acknowledging the issue, and requesting the link or steps to update payment details and complete the payment."
+    },
+    {
+      "phone": "919000000472",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.73,
+      "seen_interventions": [
+        "e7319a05-99c7-4430-aa95-9aa2c6d10fd4"
+      ],
+      "conversation_summary": "Agent notified that the INR 999.00 payment failed due to insufficient funds on card ending 919000000472. User acknowledges the issue and plans to resolve it promptly."
+    },
+    {
+      "phone": "919000000473",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "040eda51-0603-4ae1-a585-871c0ba9f437",
+        "6c41072a-9257-48dd-9c74-3ee0084fdb7d"
+      ],
+      "conversation_summary": "Agent notified that the payment of INR 999.00 failed because the card had insufficient funds. I asked for a straightforward way to update the payment method, preferring UPI over re-entering card details. Agent responded with a direct link to update payment method to UPI: https://rzp.io/i/d7724336. I thanked them and said I will use the link to switch to UPI and complete the payment."
+    },
+    {
+      "phone": "919000000474",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.9,
+      "seen_interventions": [
+        "d38f5290-191b-457d-8696-6dbf9f83639d",
+        "775fa6b1-614b-4dff-adb5-ca62ee630edb"
+      ],
+      "conversation_summary": "Agent notified about insufficient funds for INR\u202f999. Customer acknowledged and promised to handle payment tonight. Agent provided payment link and offered assistance for any issues."
+    },
+    {
+      "phone": "919000000475",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.86,
+      "seen_interventions": [
+        "ab138ae0-677c-4948-b980-9171a5e5c05e",
+        "e915fc42-c189-43b3-b74a-056fb0e0ed0c"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 999 (ref 919000000475) due to insufficient funds. I replied that I would sort it out tonight. Agent thanked me, noted I\u2019d handle it tonight, and provided a payment link. I am now confirming payment."
+    },
+    {
+      "phone": "919000000476",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.84,
+      "seen_interventions": [
+        "01957c4b-4707-4398-9721-a63c256e4454",
+        "2b623d4b-4427-48cd-ad70-00b2f03fb6fd"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 999.00 (ref 919000000476) indicating insufficient funds. I replied that I would handle the payment tonight. Agent followed up, confirming readiness and providing the payment link."
+    },
+    {
+      "phone": "919000000477",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "76df4f88-0622-4c93-9920-aaffed78ccd8",
+        "c0c2c948-8dcd-407f-804b-9a9c2a54b75a"
+      ],
+      "conversation_summary": "Agent notified that the payment of INR 999.00 failed due to insufficient funds on the card. Customer asked for a way to update payment details, preferring UPI. Agent provided a link (https://rzp.io/i/dccc8943) to update the payment method and instructed to select UPI during checkout."
+    },
+    {
+      "phone": "919000000478",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.75,
+      "seen_interventions": [
+        "53b069be-40b7-4a67-8e10-c42c8457b93b"
+      ],
+      "conversation_summary": "Agent sent payment recovery notice: INR 999.00, transaction ID 919000000478, reason: insufficient funds. Customer responded expressing thanks, intent to update card and pay immediately."
+    },
+    {
+      "phone": "919000000479",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.8,
+      "seen_interventions": [
+        "2767c443-f639-4fc3-b1fb-24950667d8e9",
+        "35b68b70-f77d-458b-9143-b6ca5f730bd7",
+        "6977c6dc-5f5a-4a42-a911-6e8ddbbb4dd9"
+      ],
+      "conversation_summary": ""
+    },
+    {
+      "phone": "919000000480",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.87,
+      "seen_interventions": [
+        "b6d2cf97-41d1-41a8-8376-942b1d5b7d74",
+        "e47d9620-47d9-43cd-b360-4405c39720b9"
+      ],
+      "conversation_summary": "Agent informed me that INR\u202f999.00 could not be charged due to insufficient funds on my card. I replied that I would handle the payment tonight. Agent sent a follow\u2011up with a payment link (https://rzp.io/i/6cc50d27) and asked if I needed any help. I responded that I\u2019m opening the link now and will complete the payment."
+    },
+    {
+      "phone": "919000000481",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "38a9c082-9432-41fd-ba65-3b6374b35ac4",
+        "432fc596-63bd-41a8-9528-108fe203ea4b"
+      ],
+      "conversation_summary": "Agent notified me of a failed INR 999 charge (transaction ID 919000000481) due to insufficient funds. I acknowledged the failure and asked for a secure link to update payment details or an option to pay via UPI. Agent responded with a link: https://rzp.io/i/6a000093, offering to update payment details or pay via UPI."
+    },
+    {
+      "phone": "919000000482",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.88,
+      "seen_interventions": [
+        "200dace1-8b14-4ab7-94e2-e80f186f4610",
+        "20f463a7-176d-4a02-afae-1b34025b3f7d",
+        "9e5c602d-56b0-465e-b57b-203ed29842a7"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for a failed 999 INR charge (reference 919000000482) due to insufficient funds. User asked for clarification about what the charge is for and when it was initiated. Agent replied that the charge is for the Razorpay Premium Annual Subscription and provided a payment link. User requested the subscription start date, details of the plan, and an invoice to verify the charge. Agent responded that they don\u2019t have access to the subscription start date or receipt and have forwarded the request to support, promising a follow\u2011up."
+    },
+    {
+      "phone": "919000000483",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.8,
+      "seen_interventions": [
+        "477f60bf-10f0-4d31-9292-33ba857974cd",
+        "48c45c90-fece-4d90-a8de-ab7b127e5c66",
+        "0982ce0b-4b56-4a3e-a264-c75f7f84586a"
+      ],
+      "conversation_summary": "Agent notified that the payment failed due to insufficient funds. User asked what would be lost if they cancel, expressing uncertainty about continuing the subscription. Agent explained that cancelling would lose premium features like advanced analytics, priority support, and exclusive content, and provided a payment link. Agent then offered to pause the subscription for a month and asked for confirmation."
+    },
+    {
+      "phone": "919000000484",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.78,
+      "seen_interventions": [
+        "515e1dd3-7d42-46c4-b085-305fbd5512fd",
+        "44aed2ed-5a3d-4ad4-80e7-503e5059975c",
+        "49ad0d26-cab9-48b5-8c84-393cc90a8f84"
+      ],
+      "conversation_summary": "Agent notified the customer of a \u20b9999 charge (transaction ID 919000000484) for a Razorpay Premium Annual Subscription and provided a payment link. The customer asked for clarification on which product or service the charge pertains to and when they originally signed up. Agent replied that the charge is for the Razorpay Premium Annual Subscription, did not have the signup date, and shared a payment link. The customer requested further details and verification before deciding. Agent then responded that they don\u2019t have access to the signup date or invoice, but have forwarded the request to support and will be contacted shortly."
+    },
+    {
+      "phone": "919000000485",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "d7257ba7-a925-4886-89f1-6943a61e77cc",
+        "efd7cdb8-0acb-4139-a8ee-a76d189f40ea",
+        "0c7f7399-30ec-4b58-a7c4-53547c5b7abf"
+      ],
+      "conversation_summary": "Agent notified of failed payment of INR 999.00 due to insufficient funds. User asked what would be lost if they cancel and indicated they are still deciding. Agent explained that cancelling would lose premium features, priority support, and exclusive content, and offered to pause the subscription for a month. Agent then confirmed the subscription was paused for a month and will reactivate automatically."
+    },
+    {
+      "phone": "919000000486",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "3b4f1426-7d9b-4213-94ec-00073856fde6",
+        "85f0121f-c633-4ea9-8d3c-894305d5ab50"
+      ],
+      "conversation_summary": "Agent notified that the payment of INR 999.00 failed because the card had insufficient funds. I requested a way to update my payment method, preferably via UPI. Agent responded with a link (https://rzp.io/i/a4d6cc26) and instructed to choose UPI to complete the payment. I confirmed I will use the link to pay via UPI."
+    },
+    {
+      "phone": "919000000487",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 2,
+      "temperature": 0.77,
+      "seen_interventions": [
+        "9f1258c3-4eb3-4b0d-bd23-3552642b5c8a",
+        "ffc847a9-3ba3-458d-9575-3823b2730f91"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 due to insufficient funds. Customer asked what they'd lose if they cancel and if they can pause the service while deciding. Agent replied that they'd still have access to all premium features, analytics, and priority support, and offered to pause for a month. Customer now requests to pause the subscription for a month."
+    },
+    {
+      "phone": "919000000488",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 2,
+      "temperature": 0.7,
+      "seen_interventions": [
+        "b1eca1df-8124-4ee9-b6bb-56939b081a18",
+        "e135e197-8c66-44b7-97da-c115f136cf86"
+      ],
+      "conversation_summary": "Agent notified about a failed payment of INR 999.00 due to insufficient funds. User asked what would happen if they cancel and requested a possible pause to consider the decision. Agent explained that cancelling would lose access to all premium features and support, and offered a one-month pause. User now requests to pause the subscription for a month."
+    },
+    {
+      "phone": "919000000489",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "b04d3560-efe2-4bb3-8dda-bcddebba21d6",
+        "85980188-0b17-48f4-9b4d-3282901f7d32"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice about a failed INR 999.00 charge due to insufficient funds on card ending 919000000489. I replied that I\u2019d handle the payment tonight. Agent followed up with a thank\u2011you and provided a payment link for me to complete the transaction."
+    },
+    {
+      "phone": "919000000490",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.8,
+      "seen_interventions": [
+        "4017c604-bd57-4479-9260-e6f490cb4d9c",
+        "32793535-1199-4fe4-bd76-0d29443398da",
+        "6aaecd73-3882-4f92-9ef7-5dbe61ded499"
+      ],
+      "conversation_summary": "Agent notified the user that a payment of INR 999.00 failed due to insufficient funds. The user asked what would be lost if they cancel and requested more time before fixing the payment. Agent explained that canceling would remove access to premium analytics, priority support, and exclusive content, and offered to pause the subscription for a month. Agent then confirmed the subscription has been paused for a month and asked the user to inform when ready to resume."
+    },
+    {
+      "phone": "919000000491",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.86,
+      "seen_interventions": [
+        "b0643e45-a3e1-4c86-bd6a-e952859b2af4",
+        "8edfeb90-e3b8-46f4-adad-baba3f494409"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR 999.00 (reference 919000000491) due to insufficient funds. Customer replied promising to handle the payment tonight. Agent followed up with a payment link (https://rzp.io/i/6e542374) and asked if help was needed. Customer now confirms they will pay immediately using the provided link."
+    },
+    {
+      "phone": "919000000492",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.74,
+      "seen_interventions": [
+        "71d6f759-9ea1-4b01-b13e-f8a7c0956a96",
+        "08c2ca33-105d-4a38-9bcb-13eb7eba00fb",
+        "b7cae075-661e-4169-ab0c-7911b23c090e"
+      ],
+      "conversation_summary": ""
+    },
+    {
+      "phone": "919000000493",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "b3d5460b-a3fd-4428-be4f-bc7ad9968ffa",
+        "e6d9d2ca-f19d-469c-987f-dbf5c7dc753f"
+      ],
+      "conversation_summary": "Agent notified that the payment of INR 999.00 (invoice 919000000493) failed due to insufficient funds on the card. Customer asked for a way to update the payment method, preferring UPI. Agent responded with a UPI update link: https://rzp.io/i/b7536ce8. Customer thanks the agent and will update the payment method via UPI."
+    },
+    {
+      "phone": "919000000494",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 2,
+      "temperature": 0.75,
+      "seen_interventions": [
+        "efa80c93-494e-4dc3-92d9-f8dd97855cb0",
+        "73cf79d3-e8de-4e24-ba49-c278e3251348"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating that a payment of INR 999.00 failed due to insufficient funds on the card. Agent then explained that cancelling means losing access to all premium features like advanced analytics, priority support, and exclusive content, and offered to pause the subscription for up to a month if requested."
+    },
+    {
+      "phone": "919000000495",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.83,
+      "seen_interventions": [
+        "8ef59024-c176-4a13-9224-489b093a36ac",
+        "8048bbe7-decc-48e5-a74b-efc0fd5656cd",
+        "56fd92d1-e838-4974-8748-8968b9e0c5d7"
+      ],
+      "conversation_summary": ""
+    },
+    {
+      "phone": "919000000496",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 3,
+      "temperature": 0.72,
+      "seen_interventions": [
+        "4eeb624d-1b0c-4bdc-a6e1-f334f3837051",
+        "9f3a1ea8-facb-481e-a395-540c4011e8ca",
+        "79c006a6-bae5-454d-bb58-93f9437bd17f"
+      ],
+      "conversation_summary": "Agent notified of payment failure for INR 999.00. Customer asked what would be lost if they cancel. Agent explained loss of premium features: advanced analytics, priority support, exclusive content. Customer requested more details on exclusive content and asked about pausing the subscription. Agent described exclusive content (weekly deep\u2011dive articles, monthly webinars, quarterly industry reports) and offered to pause the subscription for one month."
+    },
+    {
+      "phone": "919000000497",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 2,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "3962abc3-8cf4-491c-b807-07df67bc42e4",
+        "1cf065d1-a1aa-4630-ac11-9c42187dd138"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 due to insufficient funds. Customer asked what would be lost if they cancel and whether they can pause the subscription. Agent replied that canceling would lose access to all premium features and priority support, and offered a 1\u2011month pause option. Customer now requests to pause for a month."
+    },
+    {
+      "phone": "919000000498",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 2,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "e1c7fc6f-6d69-45d1-a63a-fbd0c47b019f",
+        "1193d3bb-473f-4562-8207-7dd03ed6f93b"
+      ],
+      "conversation_summary": "Agent notified that the INR 999 payment failed due to insufficient funds. I asked what would happen if I canceled and requested to pause the subscription until I could resolve the issue. Agent replied they can pause the Razorpay Premium Annual Subscription for 1 month, noting loss of premium features during the pause and providing a link to resume payment. I responded agreeing to the one\u2011month pause."
+    },
+    {
+      "phone": "919000000499",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 3,
+      "temperature": 0.72,
+      "seen_interventions": [
+        "ed116e2d-194a-4fdd-9bf6-908ed7514f11",
+        "b00aec7f-2f1c-404f-9baf-51f03b0a5473",
+        "df02d36f-659b-4cf5-93a4-09aadaebe7fb"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a 999\u202fINR charge (reference 919000000499) due to insufficient funds, without specifying the product or subscription. Agent then replied that the charge is for the Razorpay Premium Annual Subscription but did not provide the signup date, suggesting I check my email or account for that info. Agent described the Razorpay Premium Annual Subscription benefits and offered a payment link, still without giving the signup date. I am asking for the exact signup date and the email address associated with the subscription before deciding to pay."
+    },
+    {
+      "phone": "919000000500",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 2,
+      "temperature": 0.77,
+      "seen_interventions": [
+        "a51389f0-62ce-4774-a3dd-0f29e916a967",
+        "c4a2be80-6885-4749-b551-f214b2e5d283"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 due to insufficient funds on card 919000000500. The customer asked for clarification about the product/service and subscription date before deciding how to proceed. Agent replied that the subscription is for Razorpay Premium Annual Subscription, apologized for not having the signup date, and said the request was forwarded to the support team for follow\u2011up."
+    },
+    {
+      "phone": "919000000501",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 3,
+      "temperature": 0.89,
+      "seen_interventions": [
+        "f24f70b4-d6f9-4ad3-80fc-cbabab200318",
+        "db2625a5-3112-4415-87a7-3d8933a4b43a",
+        "acd90835-c4ca-4efe-b48d-843195fa07f4"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice for INR\u202f999.00 due to insufficient funds on card 919000000501. I asked for clarification about the product/service and the sign\u2011up date. Agent replied that it is for the Razorpay Premium Annual Subscription, but does not have the signup date on hand, and offered a payment link. I requested the signup date or an invoice to verify the charge."
+    },
+    {
+      "phone": "919000000502",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.74,
+      "seen_interventions": [
+        "5ef6861a-9f9d-4a32-838b-06fe19db9666",
+        "0e452723-2e33-4cc2-a96c-e01529b3517d"
+      ],
+      "conversation_summary": "Agent notified me that my payment of INR 999.00 failed due to insufficient funds on the card on file. I expressed willingness to pay but needed a way to update my payment method, preferring UPI over re\u2011entering card details. Agent responded with a UPI payment link (https://rzp.io/i/8084f8fe) and asked if I needed anything else. I thanked them and said I\u2019d use the link to complete the payment immediately."
+    },
+    {
+      "phone": "919000000503",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "e1db7993-2887-4e0f-8757-5f8017bd1206",
+        "0461ede3-8dda-413a-b9d4-f51522a2a81a",
+        "68475b0c-e11f-4a2c-a384-c075d008d1d6"
+      ],
+      "conversation_summary": "Agent notified the user that a payment of INR 999.00 failed due to insufficient funds, warned that canceling would lose access to all premium features (advanced analytics, priority support, exclusive content), and offered the option to pause for one month. The agent then confirmed that the subscription has been paused for a month and asked the user to let them know when ready to resume."
+    },
+    {
+      "phone": "919000000504",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "88c11306-7a3a-49ba-ab93-0d48296ba4a3",
+        "f8ae9e5c-2924-46c9-a290-afca0d08d9c8",
+        "bec77a99-fcbf-43bc-a755-ef2e3db50626"
+      ],
+      "conversation_summary": "Agent notified user of a failed INR 999.00 charge due to insufficient funds. User asked what benefits would be lost if they cancel. Agent explained that cancelling removes access to premium analytics, priority support, and exclusive content, and offered a one\u2011month pause option. User requested a one\u2011month pause and asked for confirmation about data retention and reactivation. Agent confirmed the pause, assured data and settings remain safe, and said the user can reactivate anytime. User now confirms the pause request and acknowledges the data retention assurance."
+    },
+    {
+      "phone": "919000000505",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "684dd8a3-8799-4a8f-b2b8-b0ea9bcd811e",
+        "036363ff-321a-4147-9c4a-b2cdcdffeb8a",
+        "ad13a1e5-2bc5-425d-94f3-23697d6e7ba8"
+      ],
+      "conversation_summary": ""
+    },
+    {
+      "phone": "919000000506",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.85,
+      "seen_interventions": [
+        "13335c94-bbc8-4f72-9d91-939819e18bc1",
+        "b79b82d7-1829-4bdd-87d2-3a5bda4a04fa"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice stating the card had insufficient funds for the INR 999.00 charge. The customer acknowledged the issue and asked for a way to update the payment method, requesting a UPI option. Agent replied with a link to update payment and indicated that UPI can be selected during checkout, offering further help."
+    },
+    {
+      "phone": "919000000507",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.75,
+      "seen_interventions": [
+        "9f512204-2407-484b-bb21-a575c53428ee"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed INR 999.00 transaction (ID 919000000507) due to insufficient funds. Customer acknowledged the issue, updated the card details, and requested the payment be retried."
+    },
+    {
+      "phone": "919000000508",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "d613bd34-9bab-45e8-80d4-21d1d40ac1b9"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed INR\u202f999.00 charge due to insufficient funds on card ending 508. Customer acknowledges the issue and asks for a payment link to settle the amount promptly."
+    },
+    {
+      "phone": "919000000509",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "1d6418dc-5d24-4b31-988e-0243840eeb05"
+      ],
+      "conversation_summary": "Agent notified that payment of INR 999.00 failed due to insufficient funds on card ending 919000000509. Customer acknowledges the issue and plans to update the card and retry the payment."
+    },
+    {
+      "phone": "919000000510",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "43e9c360-c738-406a-b5b2-181a22015047"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed INR 999.00 charge (transaction ID 919000000510) due to insufficient funds. Customer acknowledges the issue and commits to updating card details promptly to complete the payment."
+    },
+    {
+      "phone": "919000000511",
+      "persona": "accidental_failure",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 0,
+      "temperature": 0.75,
+      "seen_interventions": [
+        "c061657a-167e-4a66-9aed-4a894559c4e8"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice indicating a failed payment of INR 999.00 (transaction ID 919000000511) due to insufficient funds. Customer thanked the agent, said they will update their card details and retry the payment."
+    },
+    {
+      "phone": "919000000512",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 3,
+      "temperature": 0.75,
+      "seen_interventions": [
+        "e28bc03d-b8d4-48f1-8c54-826ddffde50e",
+        "fffc2692-f945-440c-88fa-6d2a1fdb74d3",
+        "f6ecb6f1-69fc-4b57-b6e6-7df02ca38bc3"
+      ],
+      "conversation_summary": "Agent notified of a failed INR 999.00 payment, user asked about cancellation impact and requested more time, agent highlighted premium features and offered a one\u2011month pause, user requested the pause, agent confirmed the subscription is paused for a month and provided a payment link for later."
+    },
+    {
+      "phone": "919000000513",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.74,
+      "seen_interventions": [
+        "1fba826f-cc2a-40cb-ae4b-ab510a9b08c5",
+        "95e4901d-d9d8-4673-903b-96eab34158a8"
+      ],
+      "conversation_summary": "Agent notified that the payment of \u20b9999.00 failed due to insufficient funds on the card ending in 513. I asked for a simple way to update the payment method, preferring UPI. Agent responded with a UPI link (https://rzp.io/i/d70ac128) for updating payment. I thanked the agent and confirmed I completed the payment via the provided UPI link."
+    },
+    {
+      "phone": "919000000514",
+      "persona": "forgetful_promises_then_pays",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "32353298-7cef-4399-b868-f3dfe5eb0b73",
+        "ba23c2e0-b573-417e-a94f-5f3d3550a1f5"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice stating the INR 999.00 charge failed due to insufficient funds on card 919000000514. Customer replied that they will handle the payment tonight. Agent thanked the update, said they'd wait for the payment tonight, and provided the payment link. Customer now confirms they will pay using the link."
+    },
+    {
+      "phone": "919000000515",
+      "persona": "suspicious_payer",
+      "status": "resolved",
+      "outcome": "human_escalated",
+      "replies_sent": 3,
+      "temperature": 0.82,
+      "seen_interventions": [
+        "dfc713ff-2e68-4ea8-a973-49b35545bd9f",
+        "94ba8130-44c9-47e6-b275-cd922371f0db",
+        "9c41b8cd-b0fd-427e-b592-5ec09520a549"
+      ],
+      "conversation_summary": "Agent sent a payment recovery notice about a 999\u202fINR charge that failed due to insufficient funds (reference 919000000515). I asked for details about the product/service and the sign\u2011up date. Agent replied that the charge is for a Razorpay Premium Annual Subscription, they don\u2019t have the signup date, and provided a payment link. Agent then said they have no access to my signup date or original invoice, forwarded my request to support, and gave the same payment link again."
+    },
+    {
+      "phone": "919000000516",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.79,
+      "seen_interventions": [
+        "d17580ba-ac7d-4e66-8938-bdc9225f23e3",
+        "f4096cc3-eb38-4b46-9587-485bd60d889b"
+      ],
+      "conversation_summary": "Agent notified the customer of a failed payment due to insufficient funds for INR 999.00 on the card ending in 516. Customer acknowledged the issue and asked for an alternative payment option (UPI) or instructions to update payment details. Agent responded with a UPI payment link (https://rzp.io/i/407ddaab) and offered further assistance. Customer now thanks the agent and indicates they will use the link to pay."
+    },
+    {
+      "phone": "919000000517",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.76,
+      "seen_interventions": [
+        "119fb790-1de1-44c1-b650-0aa5e1f2b9a4",
+        "948d53a3-8308-4ce8-a8f1-168b38be0dd0",
+        "2f13183b-8886-492a-adc3-afcc97ac357e"
+      ],
+      "conversation_summary": ""
+    },
+    {
+      "phone": "919000000518",
+      "persona": "considering_cancellation",
+      "status": "resolved",
+      "outcome": "retained_paused",
+      "replies_sent": 2,
+      "temperature": 0.7,
+      "seen_interventions": [
+        "ca72efa8-982a-4d2f-8bfe-5d65325a6b56",
+        "6ed947d7-65ae-46a5-8577-db0320224dbe"
+      ],
+      "conversation_summary": "Agent notified the user that the INR 999.00 payment failed due to insufficient funds. The user expressed uncertainty about continuing the service and asked what would be lost on cancellation and if a pause was possible. Agent replied that cancelling would remove access to all premium features but offered a one\u2011month pause option, instructing the user to log in and choose pause."
+    },
+    {
+      "phone": "919000000519",
+      "persona": "needs_payment_help",
+      "status": "resolved",
+      "outcome": "recovered",
+      "replies_sent": 1,
+      "temperature": 0.7,
+      "seen_interventions": [
+        "3d5427ce-fe85-4580-ae07-f30b9f0fae4e",
+        "efbbb4fc-0c72-4555-9ecd-99b5a3e88080"
+      ],
+      "conversation_summary": "Agent informed me that the INR 999.00 payment for invoice 919000000519 failed due to insufficient funds on the card. I asked for a simple way to update payment info, preferably via UPI. Agent responded with a link (https://rzp.io/i/f631defe) to update the payment method, including UPI, and offered further help. I confirmed I will use the link to update and pay now."
+    },
+    {
+      "phone": "919000000520",
+      "persona": "ignores_completely",
+      "status": "resolved",
+      "outcome": "timeout",
+      "replies_sent": 0,
+      "temperature": 0.71,
+      "seen_interventions": [
+        "18bed03a-b05e-479a-b5d1-27134b0126ad",
+        "bd1fadf8-1138-4324-b422-1f86c3cc5560",
+        "bff8eb50-4902-46a0-919e-28b9d072b82c"
+      ],
+      "conversation_summary": ""
+    }
+  ],
+  "note": "This report was generated using live deployed infrastructure (real HTTP webhooks against Render) with LLM-simulated persona behavior bypassing the Meta API."
+}
