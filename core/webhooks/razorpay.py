@@ -213,7 +213,22 @@ async def process_webhook(
                 reason=f"razorpay_webhook:{event_type}"
             )
             session.add(transition)
-            
+
+            # Every other transition path in the app logs a matching AuditEvent
+            # (see state_machine.py) -- this one didn't, so a recovered case's
+            # timeline in the case explorer silently stopped at its last
+            # message and never showed the payment actually landing.
+            audit_recovered = AuditEvent(
+                case_id=case.id,
+                event_type="state_transition",
+                payload={
+                    "from_state": old_status,
+                    "to_state": "recovered",
+                    "reason": f"razorpay_webhook:{event_type}",
+                }
+            )
+            session.add(audit_recovered)
+
             outcome = Outcome(
                 case_id=case.id,
                 final_state="recovered",
