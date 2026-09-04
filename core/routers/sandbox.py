@@ -369,7 +369,37 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
 
                         if action == "pay_now":
                             await send_payment_captured(customer_ref, client)
-                            continue
+
+                    # The reply we just sent may have pushed the case into a
+                    # terminal state as a side effect -- either via pay_now
+                    # above, or because it was the reply that tripped a
+                    # stopping rule (e.g. max_broken_promises auto-escalating
+                    # to human_escalated). Either way, that processing also
+                    # generated its own fresh reactive/handoff Intervention
+                    # that we haven't added to seen_interventions yet, so the
+                    # has_unseen check next round would be fooled into
+                    # thinking there's a new agent turn and make the persona
+                    # reply to a conversation that's already over (that reply
+                    # then gets silently dropped by the terminal-case guard in
+                    # process_inbound_reply -- saved to the DB but with no
+                    # audit trail, invisible in the chat). Re-check status
+                    # directly instead of relying on has_unseen -- and force a
+                    # real re-read: case_row is already in this session's
+                    # identity map, so a plain re-query would hand back the
+                    # same (stale) object instead of the row the webhook
+                    # request just committed via its own session/connection.
+                    refreshed_case = await session.scalar(
+                        select(Case)
+                        .where(Case.id == case_row.id)
+                        .execution_options(populate_existing=True)
+                    )
+                    if refreshed_case and refreshed_case.status in (
+                        "recovered", "retained_paused", "stopped", "human_escalated", "timeout"
+                    ):
+                        SANDBOX_SESSIONS[session_id]["done"] = True
+                        return
+
+                    continue
                 else:
                     rounds_stalled += 1
                     if rounds_stalled >= 3:
