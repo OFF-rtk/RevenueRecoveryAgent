@@ -25,7 +25,7 @@ from core.services.state_machine import draft_and_send_followup
 from core.services.intervention import HUMAN_CAUSES, render_template_message
 
 
-async def check_followup(case_id_str: str, force: bool, use_mock: bool = False):
+async def check_followup(case_id_str: str, force: bool, use_mock: bool = False, session_window_hours: float = 24.0):
     try:
         case_id = uuid.UUID(case_id_str)
     except ValueError:
@@ -37,12 +37,12 @@ async def check_followup(case_id_str: str, force: bool, use_mock: bool = False):
     # that and crashed with "No module named 'psycopg2'" on deploy.
     engine = create_async_engine(settings.database_url)
     try:
-        await _check_followup_impl(engine, case_id, case_id_str, force, use_mock)
+        await _check_followup_impl(engine, case_id, case_id_str, force, use_mock, session_window_hours)
     finally:
         await engine.dispose()
 
 
-async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, force: bool, use_mock: bool = False):
+async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, force: bool, use_mock: bool = False, session_window_hours: float = 24.0):
     async_session = async_sessionmaker(engine, expire_on_commit=False)
 
     async with async_session() as session:
@@ -63,7 +63,9 @@ async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, for
             else:
                 print(f"⚠️ Forcing follow-up on terminal case ({case.status}).")
 
-        # Fetch latest reply to check 24-hour window
+        # Fetch latest reply to check the session-open window (24h for real WhatsApp
+        # sessions; the sandbox passes a much shorter window since it can't wait
+        # 24 real hours to demonstrate the actual reminder template)
         result = await session.execute(
             select(Reply).where(Reply.case_id == case.id).order_by(Reply.received_at.desc()).limit(1)
         )
@@ -72,7 +74,7 @@ async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, for
         is_session_open = False
         if latest_reply and latest_reply.received_at:
             time_since_reply = datetime.now(timezone.utc) - latest_reply.received_at
-            if time_since_reply < timedelta(hours=24):
+            if time_since_reply < timedelta(hours=session_window_hours):
                 is_session_open = True
                 
         # Determine channel
@@ -119,10 +121,16 @@ async def _check_followup_impl(engine, case_id: uuid.UUID, case_id_str: str, for
             parameters = [str(case.currency), str(case.amount), str(case.customer_ref), human_cause]
             sent_representation = render_template_message(template_used, parameters)
 
-            # Check stopping rules before sending
+            # Check stopping rules before sending. action_type="follow_up" is
+            # required here -- check_max_retries's cap exists for cold
+            # first-contact retries, and explicitly no-ops for follow-up
+            # actions; omitting it made this cap trip on any case with >=3
+            # existing interventions (trivial after a couple of reactive
+            # replies), marking it "timeout" and blocking the actual
+            # reminder before it could ever send.
             try:
                 from core.services.stopping_rules import check_max_retries
-                await check_max_retries(case, session)
+                await check_max_retries(case, session, action_type="follow_up")
             except Exception as e:
                 if type(e).__name__ == "StoppingRuleError":
                     print(f"🛑 Stopping rule triggered: {e}")

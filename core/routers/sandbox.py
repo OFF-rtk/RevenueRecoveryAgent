@@ -258,12 +258,21 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
             await send_razorpay_webhook(customer_ref, req.root_cause, req.case_type, client)
             
         async_session = async_session_factory()
-        
+
         seen_interventions = []
         conversation_summary = ""
         replies_sent = 0
         rounds_stalled = 0
-        
+        # How many times in a row the case has landed back in promise_pending
+        # without paying -- used to force a real reminder (see below).
+        promise_streak = 0
+        reminder_forced_this_streak = False
+        # Set at the end of a round that just sent a reply during a promise
+        # streak; consumed at the *start* of the next round (after the normal
+        # sleep gives the backend time to actually process that reply) so we
+        # never call check_followup against state that hasn't landed yet.
+        pending_reminder_force = False
+
         for round_idx in range(40):
             await asyncio.sleep(2)
             async with async_session() as session:
@@ -272,24 +281,50 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                 )
                 if not case_row:
                     continue
-                    
+
                 SANDBOX_SESSIONS[session_id]["case_id"] = str(case_row.id)
-                    
+
+                if pending_reminder_force:
+                    pending_reminder_force = False
+                    # Re-check status rather than trusting the flag blindly --
+                    # the backend's own broken-promise rule (3 promise_made
+                    # replies -> human_escalated) could have already resolved
+                    # this case in the meantime, and forcing a "still waiting
+                    # for your payment" reminder onto an already-escalated case
+                    # would be a confusing thing to show in a demo.
+                    if case_row.status == "promise_pending":
+                        # Send the actual payment_reminder_followup_v1 template
+                        # (not another reactive LLM reply) so the demo shows the
+                        # real proactive reminder firing, not just back-and-forth
+                        # acknowledgments. session_window_hours is forced near-
+                        # zero: the sandbox can never wait out the real 24h
+                        # "session open" window, so without this the template
+                        # branch is unreachable once the customer has replied
+                        # even once.
+                        await check_followup(str(case_row.id), force=True, session_window_hours=0.0001)
+                    continue
+
                 intervention = await session.scalar(
                     select(Intervention).where(Intervention.case_id == case_row.id).order_by(desc(Intervention.sent_at)).limit(1)
                 )
-                
+
                 has_unseen = intervention and str(intervention.id) not in seen_interventions
-                
+
                 if case_row.status in ("recovered", "retained_paused", "stopped", "human_escalated", "timeout") and not has_unseen:
                     SANDBOX_SESSIONS[session_id]["done"] = True
                     return
-                    
+
                 if has_unseen:
                     rounds_stalled = 0
                     seen_interventions.append(str(intervention.id))
                     agent_text = intervention.message_sent
-                    
+
+                    if case_row.status == "promise_pending":
+                        promise_streak += 1
+                    else:
+                        promise_streak = 0
+                        reminder_forced_this_streak = False
+
                     # Persona replies
                     llm_resp = await get_persona_reply(
                         persona_type=req.persona,
@@ -297,26 +332,36 @@ async def run_sandbox_simulation(session_id: str, req: SandboxRunRequest):
                         latest_agent_message=agent_text,
                         temperature=0.7
                     )
-                    
+
                     conversation_summary = llm_resp.get("conversation_summary", conversation_summary)
                     reply_text = llm_resp.get("reply_text", "").strip()
                     action = llm_resp.get("action", "undecided")
-                    
+
                     async with httpx.AsyncClient(timeout=60.0) as client:
                         if action == "pay_now":
                             await send_payment_captured(customer_ref, client)
                             continue
-                            
+
                         if reply_text:
                             await send_whatsapp_webhook(customer_ref, reply_text, client)
                             replies_sent += 1
+
+                            # Fire after the *first* promise, not the second --
+                            # the natural conversation can reach the backend's
+                            # own 3-broken-promises cap as early as the very
+                            # next round, so waiting any longer risks the
+                            # reminder landing after the case has already been
+                            # escalated (see the status re-check above).
+                            if promise_streak >= 1 and not reminder_forced_this_streak:
+                                reminder_forced_this_streak = True
+                                pending_reminder_force = True
                 else:
                     rounds_stalled += 1
                     if rounds_stalled >= 3:
                         # force a manual follow-up to advance the stale case
                         await check_followup(str(case_row.id), force=True)
                         rounds_stalled = 0
-                        
+
         SANDBOX_SESSIONS[session_id]["done"] = True
     except Exception as e:
         import traceback
