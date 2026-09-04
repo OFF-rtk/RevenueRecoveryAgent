@@ -30,8 +30,10 @@ async def check_followup(case_id_str: str, force: bool, use_mock: bool = False):
         print(f"❌ Invalid UUID: {case_id_str}")
         return
 
-    db_url = os.getenv("DATABASE_URL", settings.database_url)
-    engine = create_async_engine(db_url)
+    # settings.database_url already normalizes the raw postgres:// scheme Render
+    # injects to postgresql+asyncpg:// -- reading os.environ directly here bypassed
+    # that and crashed with "No module named 'psycopg2'" on deploy.
+    engine = create_async_engine(settings.database_url)
     try:
         await _check_followup_impl(engine, case_id, case_id_str, force, use_mock)
     finally:

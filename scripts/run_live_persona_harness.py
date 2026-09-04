@@ -365,8 +365,11 @@ async def run_harness(count: int, persona_filter: str = None):
     print("⏳ Waiting 15 seconds for Render to process initial webhooks...")
     await asyncio.sleep(15)
     
-    db_url = os.getenv("DATABASE_URL", settings.database_url)
-    engine = create_async_engine(db_url, pool_pre_ping=True, pool_recycle=300)
+    # settings.database_url already normalizes the raw postgres:// scheme to
+    # postgresql+asyncpg:// -- reading os.environ directly bypasses that and
+    # can crash with "No module named 'psycopg2'" wherever DATABASE_URL is
+    # injected in unnormalized form (e.g. Render).
+    engine = create_async_engine(settings.database_url, pool_pre_ping=True, pool_recycle=300)
     async_session = async_sessionmaker(engine, expire_on_commit=False)
     
     # 2.5 Log Persona Configuration in Audit Trail
