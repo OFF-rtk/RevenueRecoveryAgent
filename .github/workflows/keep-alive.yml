@@ -1,0 +1,27 @@
+name: Keep Render Instance Warm
+
+# Render's free tier spins the backend down after 15 minutes of no traffic,
+# and a cold start can take 30-60s -- bad first impression for anyone
+# clicking into the live demo. This pings /health often enough to prevent
+# that, with workflow_dispatch so it can be triggered manually to test.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint (with retries for a cold start)
+        run: |
+          for i in 1 2 3; do
+            if curl -sf --max-time 30 https://revenuerecoveryagent.onrender.com/health; then
+              echo "Health check succeeded on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Health check failed after 3 attempts"
+          exit 1
