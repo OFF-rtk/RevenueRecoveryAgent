@@ -37,40 +37,32 @@ The Revenue Recovery Agent automates that entire loop: it listens for Razorpay w
 
 ## 3. Architecture
 
-```text
-[Razorpay Webhooks] ── payment.failed / subscription.halted / invoice.expired
-        │
-        ▼
-[Ingestion]  HMAC-verified, idempotent on (event_type, entity_id) → Case row + audit event
-        │
-        ▼
-[Diagnosis]  every case gets a real LLM call (gpt-oss-20b)
-        │      low confidence / conflicting signals → escalate to gpt-oss-120b
-        ▼      structured output: {causes[], confidence, recommended_action}
-[First Contact]  pre-approved WhatsApp template, deterministically bound
-        │        from the diagnosed cause + customer data
-        ▼
-[Reply Interpretation]  inbound WhatsApp webhook → LLM classifies intent
-        │  {promise_made, needs_new_payment_method, disputed, paused, opt_out, unresolved, ...}
-        ▼
-[State Machine]  deterministic transition table + reactive follow-up message
-        │
-        ▼
-[Stopping Rules]  the "conscience" layer — opt-out, max retries, no-blind-retry,
-        │         dispute lockout, broken-promise cap — always checked before any send
-        ▼
-[Outcome Resolution] — first of two independent triggers wins:
-        │   (a) Razorpay payment.captured / invoice.paid webhook
-        │   (b) the WhatsApp conversation reaching a terminal state on its own
-        ▼
-[Follow-up Scheduler]  background asyncio loop, scans every 15 min for cases
-        │               gone quiet > 4h and proactively re-engages them
-        ▼
-[Audit Trail]  every decision + message is an append-only AuditEvent row
-        │
-        ▼
-[Dashboard]  Batch Summary · Case Explorer · Live Interaction sandbox
+```mermaid
+flowchart TD
+    A["Razorpay Webhook<br/>payment.failed / invoice.expired"] --> B["Ingestion<br/>HMAC-verified, idempotent"]
+    B --> C{"Diagnosis<br/>Tier 1: gpt-oss-20b"}
+    C -->|"confidence ≥ 0.75"| D["First Contact<br/>pre-approved WhatsApp template"]
+    C -->|"confidence &lt; 0.75"| C2["Tier 2: gpt-oss-120b<br/>debates candidate causes"]
+    C2 --> D
+    D --> E["Reply Interpretation<br/>LLM classifies intent"]
+    E --> F["State Machine<br/>deterministic transitions"]
+    F --> G{"Stopping Rules<br/>conscience layer"}
+    G --> H["Outcome Resolution"]
+    P["Razorpay payment.captured"] -.->|"dual trigger"| H
+    H --> J[("Audit Trail<br/>append-only")]
+    J --> K["Dashboard<br/>Batch Summary · Case Explorer · Sandbox"]
+    L["Follow-up Scheduler<br/>scans every 15 min"] -.->|"re-engages stale cases"| D
+
+    classDef llm fill:#DCE9FF,stroke:#0B1C30,color:#0B1C30
+    classDef deterministic fill:#F8F9FF,stroke:#0B1C30,color:#0B1C30,stroke-width:2px
+    classDef terminal fill:#0B1C30,stroke:#0B1C30,color:#F8F9FF
+
+    class C,C2,E llm
+    class B,D,F,G,L deterministic
+    class H,J,K terminal
 ```
+
+*(Filled blue nodes are LLM-driven; outlined nodes are deterministic code — see §4 for why the line is drawn where it is.)*
 
 ### Two independent ways a case can resolve
 
@@ -89,7 +81,7 @@ Every reply path in the system — the first-contact template, the reactive "tha
 
 ---
 
-## 4. Deterministic vs. LLM — Where We Drew the Line
+## 4. Deterministic vs. LLM — Where I Drew the Line
 
 **LLM-driven:**
 - **Diagnosis** — every case gets a genuine call to a cheap, fast tier (`gpt-oss-20b`); low-confidence or conflicting-signal cases escalate to a reasoning tier (`gpt-oss-120b`).
@@ -238,18 +230,20 @@ This batch is deliberately separate from the persona-simulation run: it measures
 
 ---
 
-## 9. What We Learned Building This
+## 9. What I Learned Building This
 
 Building an agent that directly texts real customers surfaces failure modes that don't show up as crashes — they show up as something that *looks* correct and isn't.
 
-- **The WhatsApp session-window discovery.** We originally had the LLM craft the very first outbound message. Meta blocks free-text business-initiated messages outside an active 24-hour session — full stop, no exceptions. First contact had to become a deterministic, parameter-bound template; LLM generation is reserved for replies *after* the customer opens a session by responding.
+- **The WhatsApp session-window discovery.** I originally had the LLM craft the very first outbound message. Meta blocks free-text business-initiated messages outside an active 24-hour session — full stop, no exceptions. First contact had to become a deterministic, parameter-bound template; LLM generation is reserved for replies *after* the customer opens a session by responding.
 
-- **The WABA subscription bug.** Outbound sends worked; inbound replies never reached our webhook, despite a verified callback URL and the `messages` field correctly toggled in the dashboard. The real cause was one layer deeper — our app was never registered as a *subscribed app* on the WhatsApp Business Account itself, a separate API-level subscription from anything visible in the dashboard. Found by querying `/{WABA_ID}/subscribed_apps` directly and discovering only Meta's own default test app was subscribed. One POST to the same endpoint fixed it — the hardest bug to find precisely because everything *looked* fully configured.
+- **The WABA subscription bug.** Outbound sends worked; inbound replies never reached my webhook, despite a verified callback URL and the `messages` field correctly toggled in the dashboard. The real cause was one layer deeper — my app was never registered as a *subscribed app* on the WhatsApp Business Account itself, a separate API-level subscription from anything visible in the dashboard. Found by querying `/{WABA_ID}/subscribed_apps` directly and discovering only Meta's own default test app was subscribed. One POST to the same endpoint fixed it — the hardest bug to find precisely because everything *looked* fully configured.
 
-- **The suspicious 100% accuracy catch.** An early ground-truth batch reported 100% diagnosis accuracy with 0% of cases escalating to the reasoning tier. That combination was the red flag, not the good news — it meant the fixtures weren't testing any real ambiguity. We rebuilt the fixture set with genuinely conflicting-signal cases and, in the process, found and removed an overfitted prompt rule that mechanically forced low confidence whenever one specific context field was populated — a rule that happened to correlate perfectly with our own fixture file's structure, not with any real reasoning about the case.
+- **The tier-1-model-confidently-wrong problem.** The obvious way to decide when a cheap diagnosis model should escalate to a bigger one is to just ask it: "rate your confidence, zero to one." That doesn't work — small models are bad at grading their own reasoning honestly, and will happily report high confidence even when the underlying logic is shaky. Confidently wrong is worse than honestly unsure, because nothing downstream catches it. The fix was to stop asking for a number at all: `prompts/diagnosis_v1.txt` forces a mandatory three-step reasoning chain first — what does the raw error indicate, does the context conflict with it, is there genuine ambiguity — and confidence is mechanically derived from that last answer, never self-reported. A clean match gets 1.0; any flagged conflict is forced under the 0.75 escalation threshold automatically, no matter how sure the model claims to be.
+
+- **The suspicious 100% accuracy catch.** An early ground-truth batch reported 100% diagnosis accuracy with 0% of cases escalating to the reasoning tier. That combination was the red flag, not the good news — it meant the fixtures weren't testing any real ambiguity. I rebuilt the fixture set with genuinely conflicting-signal cases and, in the process, found and removed an overfitted prompt rule that mechanically forced low confidence whenever one specific context field was populated — a rule that happened to correlate perfectly with my own fixture file's structure, not with any real reasoning about the case.
 
 - **The sandbox's own "one turn too many" bug.** The live-demo round loop tracked whether the customer's last message had already been "seen" to decide when to end a simulation. When a reply resolved the case as a side effect of *itself* (a `pay_now` reply immediately followed by the payment webhook, or a broken-promise reply that tripped the escalation rule mid-processing), the auto-generated handoff message that came with it was a brand-new, technically-"unseen" row — so the loop called the persona *one more time* after the conversation was already over. That extra reply got saved to the database but never got an audit trail (the backend's own terminal-case guard silently drops it), so it was invisible everywhere except a raw table scan. Fixed by having the loop re-check the case's actual resolved status directly, instead of inferring it from what messages it had already displayed — and by discovering, along the way, that the naive fix for this had its own bug: SQLAlchemy's identity map handed back a stale, pre-webhook copy of the same case object until the query was forced to `populate_existing()`.
 
 - **The missing proactive half of the system.** Every reminder that ever went out was reactive — triggered by an inbound message or a manually-run script. A customer who promised to pay and then went silent had nothing that would ever check back in. The follow-up scheduler (§3) exists because "the agent negotiates well when spoken to" and "the agent actually re-engages someone who's gone quiet" turned out to be two different claims, and only the code proves the second one.
 
-The pattern across all of these: the bugs that mattered weren't the ones that crashed loudly. They were the ones where a clean-looking metric, a fully-configured dashboard, or a helpful-sounding reply was quietly wrong underneath. Catching them meant treating our own good-looking numbers with the same skepticism as a broken one.
+The pattern across all of these: the bugs that mattered weren't the ones that crashed loudly. They were the ones where a clean-looking metric, a fully-configured dashboard, or a helpful-sounding reply was quietly wrong underneath. Catching them meant treating my own good-looking numbers with the same skepticism as a broken one.
