@@ -39,19 +39,19 @@ The Revenue Recovery Agent automates that entire loop: it listens for Razorpay w
 
 ```mermaid
 flowchart TD
-    A["Razorpay Webhook<br/>payment.failed / invoice.expired"] --> B["Ingestion<br/>HMAC-verified, idempotent"]
+    A["Razorpay Webhook<br/>payment.failed"] --> B["Ingestion<br/>HMAC-verified"]
     B --> C{"Diagnosis<br/>Tier 1: gpt-oss-20b"}
-    C -->|"confidence ≥ 0.75"| D["First Contact<br/>pre-approved WhatsApp template"]
-    C -->|"confidence &lt; 0.75"| C2["Tier 2: gpt-oss-120b<br/>debates candidate causes"]
+    C -->|"≥ 0.75"| D["First Contact<br/>WhatsApp template"]
+    C -->|"&lt; 0.75"| C2["Tier 2<br/>gpt-oss-120b"]
     C2 --> D
     D --> E["Reply Interpretation<br/>LLM classifies intent"]
-    E --> F["State Machine<br/>deterministic transitions"]
-    F --> G{"Stopping Rules<br/>conscience layer"}
+    E --> F["State Machine"]
+    F --> G{"Stopping Rules"}
     G --> H["Outcome Resolution"]
-    P["Razorpay payment.captured"] -.->|"dual trigger"| H
-    H --> J[("Audit Trail<br/>append-only")]
-    J --> K["Dashboard<br/>Batch Summary · Case Explorer · Sandbox"]
-    L["Follow-up Scheduler<br/>scans every 15 min"] -.->|"re-engages stale cases"| D
+    P["payment.captured"] -.->|"dual trigger"| H
+    H --> J[("Audit Trail")]
+    J --> K["Dashboard"]
+    L["Follow-up Scheduler<br/>every 15 min"] -.->|"re-engages"| D
 
     classDef llm fill:#DCE9FF,stroke:#0B1C30,color:#0B1C30
     classDef deterministic fill:#F8F9FF,stroke:#0B1C30,color:#0B1C30,stroke-width:2px
