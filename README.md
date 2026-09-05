@@ -188,6 +188,8 @@ npm run dev
 
 Recovery rate is only an honest number if the outcome isn't decided in advance. Instead of a scripted batch, the live persona harness runs the real, deployed diagnosis + conversation pipeline against a *separate* LLM (Cerebras) simulating six distinct customer personas — each given a *tendency*, not a scripted ending, at randomized temperature (0.7–0.9) so behavior genuinely varies case to case.
 
+Full methodology, configuration, and complete per-persona results: **[batch_test.md](batch_test.md)**.
+
 ### The personas
 
 1. **Accidental Failure** — straightforward, pays quickly once the issue is explained.
