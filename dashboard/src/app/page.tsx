@@ -53,14 +53,6 @@ export default function Dashboard() {
             Batch ID: BT-24X9A
           </span>
         </div>
-        <div className="flex items-center gap-4 text-on-surface-variant">
-          <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors">
-            download
-          </span>
-          <span className="material-symbols-outlined hover:text-primary cursor-pointer transition-colors">
-            filter_list
-          </span>
-        </div>
       </header>
       
       <div className="p-margin max-w-container-max mx-auto w-full space-y-margin pb-20 overflow-y-auto custom-scrollbar">

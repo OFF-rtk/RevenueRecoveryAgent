@@ -173,10 +173,32 @@ export default function Explorer() {
 
   // Filters
   const [statusFilter, setStatusFilter] = useState("All");
-  
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     fetchCases();
   }, [statusFilter]);
+
+  const filteredCases = cases.filter((c) =>
+    c.id.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
+  const handleExport = () => {
+    const headers = ["Case ID", "Customer", "Amount", "Status"];
+    const rows = filteredCases.map((c) => [c.id, c.customer_ref, c.amount, c.outcome || c.status]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cases_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const fetchCases = async () => {
     setLoading(true);
@@ -226,13 +248,15 @@ export default function Explorer() {
               className="pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64 transition-all"
               placeholder="Search case ID..."
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <button className="p-2 text-on-surface-variant border border-outline-variant bg-surface-container-lowest rounded hover:bg-surface-container-low transition-colors flex items-center gap-2">
-            <span className="material-symbols-outlined">filter_list</span>
-            <span className="font-label-caps text-label-caps">Filters</span>
-          </button>
-          <button className="p-2 text-on-surface-variant border border-outline-variant bg-surface-container-lowest rounded hover:bg-surface-container-low transition-colors flex items-center gap-2">
+          <button
+            onClick={handleExport}
+            disabled={filteredCases.length === 0}
+            className="p-2 text-on-surface-variant border border-outline-variant bg-surface-container-lowest rounded hover:bg-surface-container-low transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <span className="material-symbols-outlined">download</span>
             <span className="font-label-caps text-label-caps">Export</span>
           </button>
@@ -247,13 +271,19 @@ export default function Explorer() {
           className="bg-surface-container-lowest border border-outline-variant rounded px-3 py-1.5 font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
         >
           <option value="All">Outcome/Status: All</option>
-          <option value="resolved">Resolved</option>
-          <option value="pending">Pending</option>
-          <option value="escalated">Escalated</option>
+          <option value="open">Open</option>
+          <option value="promise_pending">Promise Pending</option>
+          <option value="payment_method_required">Payment Method Required</option>
+          <option value="disputed">Disputed</option>
+          <option value="recovered">Recovered</option>
+          <option value="retained_paused">Retained (Paused)</option>
+          <option value="human_escalated">Human Escalated</option>
+          <option value="stopped">Stopped</option>
+          <option value="timeout">Timeout</option>
         </select>
         <div className="ml-auto flex items-center gap-2">
           <span className="font-mono-timestamp text-mono-timestamp text-on-surface-variant">
-            Showing {cases.length} Cases
+            Showing {filteredCases.length} Cases
           </span>
         </div>
       </div>
@@ -286,14 +316,14 @@ export default function Explorer() {
                     Loading cases...
                   </td>
                 </tr>
-              ) : cases.length === 0 ? (
+              ) : filteredCases.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-on-surface-variant font-body-sm">
                     No cases found.
                   </td>
                 </tr>
               ) : (
-                cases.map((c) => (
+                filteredCases.map((c) => (
                   <tr
                     key={c.id}
                     className={`border-b border-outline-variant cursor-pointer transition-colors ${
